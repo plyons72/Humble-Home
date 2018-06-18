@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">HumbleHome</string>
+
+    <string name="control_item">Control</string>
+    <string name="data_item">Data</string>
+    <string name="settings_item">Settings</string>
+
+    <string name="switch_on">ON</string>
+    <string name="switch_off">OFF</string>
 </resources>

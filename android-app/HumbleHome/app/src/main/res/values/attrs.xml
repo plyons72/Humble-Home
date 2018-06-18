@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="BreakerView">
+        <attr name="id" format="integer" />
+        <attr name="label" format="string" />
+        <attr name="description" format="string" />
+        <attr name="breakerState" format="integer" />
+    </declare-styleable>
+</resources>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      android:layout_height="match_parent"
+      android:layout_width="match_parent">
+
+    <item
+        android:id="@+id/control_item"
+        android:icon="@drawable/home"
+        android:title="@string/control_item" />
+
+    <item
+        android:id="@+id/data_item"
+        android:icon="@drawable/chart_bar"
+        android:title="@string/data_item" />
+
+    <item
+        android:id="@+id/settings_item"
+        android:icon="@drawable/cog"
+        android:title="@string/settings_item" />
+
+</menu>
