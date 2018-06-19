@@ -30,17 +30,6 @@ public class BreakerView extends TableLayout {
     public BreakerView(Context context, AttributeSet attributeSet) {
         super(context, attributeSet);
         init(context);
-
-//        try {
-//            TypedArray attrs = context.getTheme().obtainStyledAttributes(attributeSet, R.styleable.BreakerView, 0, 0);
-//
-//            this.id = attrs.getInteger(R.styleable.BreakerView_id, -1);
-//            this.label = attrs.getString(R.styleable.BreakerView_label);
-//            this.description = attrs.getString(R.styleable.BreakerView_description);
-//            this.breakerState = BreakerState.values()[attrs.getInteger(R.styleable.BreakerView_breakerState, 0)];
-//        } finally {
-//            attrs.recycle();
-//        }
     }
 
     private void init(Context context) {
