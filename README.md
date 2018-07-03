@@ -1,2 +1,2 @@
-# Smart-Receptacle-Panel
-Software for Smart Receptacle Panel for Senior Design at the University of Pittsburgh
+# Humble Home
+Humble Home Software for Senior Design Project at the University of Pittsburgh
