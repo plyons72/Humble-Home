@@ -5,24 +5,28 @@
     android:padding="15dp">
 
     <TableRow
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <TableLayout>
+        <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical">
 
             <TextView
                 android:id="@+id/switchState"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_column="12"
+                android:layout_height="match_parent"
+                android:text="ON/OFF"
                 android:textSize="18sp" />
 
         </TableLayout>
 
-        <TableLayout>
+        <TableLayout
+            android:stretchColumns="1">
 
             <TableRow
-                android:layout_width="fill_parent"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
                 <TextView
@@ -30,34 +34,38 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_column="1"
-                    android:textSize="18sp" />
+                    android:textSize="18sp"
+                    android:text="Label" />
 
                 <TextView
                     android:id="@+id/eventDate"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_column="1"
-                    android:textSize="18sp" />
+                    android:layout_column="2"
+                    android:textSize="18sp"
+                    android:text="Date" />
 
             </TableRow>
 
             <TableRow
-                android:layout_width="fill_parent"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
                 <TextView
-                    android:id="@+id/switchID"
+                    android:id="@+id/switchId"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_column="1"
-                    android:textSize="18sp" />
+                    android:textSize="18sp"
+                    android:text="ID" />
 
                 <TextView
                     android:id="@+id/eventTime"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_column="1"
-                    android:textSize="18sp" />
+                    android:layout_column="2"
+                    android:textSize="18sp"
+                    android:text="Time" />
 
             </TableRow>
 
