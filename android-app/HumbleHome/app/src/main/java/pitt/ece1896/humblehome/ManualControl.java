@@ -9,6 +9,8 @@ import android.widget.LinearLayout;
 
 public class ManualControl extends Fragment {
 
+    public static BreakerView[] breakers;
+
     public static ManualControl newInstance() {
         ManualControl fragment = new ManualControl();
         return fragment;
@@ -27,14 +29,13 @@ public class ManualControl extends Fragment {
 
         LinearLayout layout = (LinearLayout) manualView.findViewById(R.id.layout);
 
-        BreakerView[] breakers = new BreakerView[32];
+        breakers = new BreakerView[32];
         for (int i = 0; i < breakers.length; i++) {
             breakers[i] = new BreakerView(getContext());
             breakers[i].setId(i);
             breakers[i].setLabel("Breaker Label");
             breakers[i].setDescription("Description");
             breakers[i].setBreakerState(BreakerView.BreakerState.values()[i % 4]);
-
             layout.addView(breakers[i]);
         }
 
