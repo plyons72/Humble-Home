@@ -19,6 +19,8 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
+import java.io.IOException;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
@@ -27,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private final String MQTT_TAG = "MQTT - ";
     //private final String serverUri = "ssl://b-f6c789c3-b708-4d73-b004-2a6245bd7c5d-1.mq.us-east-1.amazonaws.com:8883";
     private final String serverUri = "tcp://b-f6c789c3-b708-4d73-b004-2a6245bd7c5d-1.mq.us-east-1.amazonaws.com:8883";
+    private final String keystore_path = "";
     private final String clientId = "android-app";
     private final String username = "user";
     private final String password = "humblehome1896";
@@ -104,6 +107,8 @@ public class MainActivity extends AppCompatActivity {
         mqttConnectOptions.setPassword(password.toCharArray());
 
         try {
+            mqttConnectOptions.setSocketFactory(mqttAndroidClient.getSSLSocketFactory(this.getApplicationContext().getAssets().open(keystore_path), password));
+
             mqttAndroidClient.connect(mqttConnectOptions, null, new IMqttActionListener() {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
@@ -120,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(TAG, MQTT_TAG + "Failed to connect to: " + serverUri + "\nException: " + exception.toString());
                 }
             });
-        } catch (MqttException ex) {
+        } catch (IOException | MqttException ex) {
             Log.e(TAG, MQTT_TAG + ex.toString());
             ex.printStackTrace();
         }
