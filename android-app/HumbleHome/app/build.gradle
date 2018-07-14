@@ -4,7 +4,7 @@ android {
     compileSdkVersion 25
     defaultConfig {
         applicationId "pitt.ece1896.humblehome"
-        minSdkVersion 14
+        minSdkVersion 15
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
@@ -26,7 +26,12 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
-    compile 'com.android.support:appcompat-v7:25.1.0'
-    compile 'com.android.support:design:25.1.0'
-    compile 'com.android.support:support-v4:25.1.0'
+    implementation 'com.android.support:appcompat-v7:25.1.0'
+    implementation 'com.android.support:design:25.1.0'
+    implementation 'com.android.support:support-v4:25.1.0'
+
+    implementation('com.amazonaws:aws-android-sdk-mobile-client:2.6.+@aar') {
+        transitive = true
+    }
+    implementation 'com.amazonaws:aws-android-sdk-ddb-mapper:2.6.+'
 }
