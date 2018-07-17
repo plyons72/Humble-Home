@@ -27,45 +27,18 @@ public class MainActivity extends AppCompatActivity {
 
     private MqttAndroidClient mqttAndroidClient;
     private final String MQTT_TAG = "MQTT - ";
-    //private final String serverUri = "ssl://b-f6c789c3-b708-4d73-b004-2a6245bd7c5d-1.mq.us-east-1.amazonaws.com:8883";
-    private final String serverUri = "tcp://b-f6c789c3-b708-4d73-b004-2a6245bd7c5d-1.mq.us-east-1.amazonaws.com:8883";
+    private final String serverUri = "ssl://b-f6c789c3-b708-4d73-b004-2a6245bd7c5d-1.mq.us-east-1.amazonaws.com:8883";
     private final String keystore_path = "";
     private final String clientId = "android-app";
     private final String username = "user";
     private final String password = "humblehome1896";
 
+    private final String BreakerState = "BreakerState";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.navigation_bar);
-        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                Fragment selectedFragment = null;
-                switch(item.getItemId()) {
-                    case R.id.control_item:
-                        selectedFragment = BoardControl.newInstance();
-                        break;
-                    case R.id.data_item:
-                        selectedFragment = DataAnalysis.newInstance();
-                        break;
-                    case R.id.settings_item:
-                        selectedFragment = Settings.newInstance();
-                        break;
-                }
-                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                transaction.replace(R.id.frame_layout, selectedFragment);
-                transaction.commit();
-                return true;
-            }
-        });
-
-        // Manually display the first fragment when app first opens
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.frame_layout, BoardControl.newInstance());
-        transaction.commit();
 
         mqttAndroidClient = new MqttAndroidClient(getApplicationContext(), serverUri, clientId);
         mqttAndroidClient.setCallback(new MqttCallbackExtended() {
@@ -107,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
         mqttConnectOptions.setPassword(password.toCharArray());
 
         try {
-            mqttConnectOptions.setSocketFactory(mqttAndroidClient.getSSLSocketFactory(this.getApplicationContext().getAssets().open(keystore_path), password));
+            //mqttConnectOptions.setSocketFactory(mqttAndroidClient.getSSLSocketFactory(this.getApplicationContext().getAssets().open(keystore_path), password));
 
             mqttAndroidClient.connect(mqttConnectOptions, null, new IMqttActionListener() {
                 @Override
@@ -118,6 +91,8 @@ public class MainActivity extends AppCompatActivity {
                     disconnectedBufferOptions.setPersistBuffer(false);
                     disconnectedBufferOptions.setDeleteOldestMessages(false);
                     mqttAndroidClient.setBufferOpts(disconnectedBufferOptions);
+
+                    subscribeToTopic(BreakerState);
                 }
 
                 @Override
@@ -125,13 +100,68 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(TAG, MQTT_TAG + "Failed to connect to: " + serverUri + "\nException: " + exception.toString());
                 }
             });
-        } catch (IOException | MqttException ex) {
+
+        } catch (/*IOException | */MqttException ex) {
+            Log.e(TAG, MQTT_TAG + ex.toString());
+            ex.printStackTrace();
+        }
+
+        BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.navigation_bar);
+        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                Fragment selectedFragment = null;
+                switch(item.getItemId()) {
+                    case R.id.control_item:
+                        selectedFragment = BoardControl.newInstance();
+                        break;
+                    case R.id.data_item:
+                        selectedFragment = DataAnalysis.newInstance();
+                        break;
+                    case R.id.settings_item:
+                        selectedFragment = Settings.newInstance();
+                        break;
+                }
+                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                transaction.replace(R.id.frame_layout, selectedFragment);
+                transaction.commit();
+                return true;
+            }
+        });
+
+        // Manually display the first fragment when app first opens
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.frame_layout, BoardControl.newInstance());
+        transaction.commit();
+    }
+
+    private void subscribeToTopic(String topic) {
+        try {
+            mqttAndroidClient.subscribe(topic, 0, null, new IMqttActionListener() {
+                @Override
+                public void onSuccess(IMqttToken asyncActionToken) {
+                    Log.d(TAG, MQTT_TAG + "Subscribed");
+                }
+
+                @Override
+                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                    Log.d(TAG, MQTT_TAG + "Failed to subscribe");
+                }
+            });
+        } catch (MqttException ex) {
             Log.e(TAG, MQTT_TAG + ex.toString());
             ex.printStackTrace();
         }
     }
 
-    public MqttAndroidClient getMqttAndroidClient() {
-        return this.mqttAndroidClient;
+    private void publishToTopic(String topic, byte[] payload) {
+        try {
+            MqttMessage mqttMessage = new MqttMessage();
+            mqttMessage.setPayload(payload);
+            mqttAndroidClient.publish(topic, mqttMessage);
+        } catch (MqttException ex) {
+            Log.e(TAG, MQTT_TAG + ex.toString());
+            ex.printStackTrace();
+        }
     }
 }
