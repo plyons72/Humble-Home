@@ -128,6 +128,8 @@ public class ManualControl extends Fragment {
             Log.d(TAG, "updating breaker id: " + breakerId);
             breakers.get(breakerId).setLabel(label);
             breakers.get(breakerId).setDescription(description);
+
+            //TODO: send update to database
         }
     }
 }
