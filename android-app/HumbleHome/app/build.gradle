@@ -5,6 +5,7 @@ android {
     defaultConfig {
         applicationId "pitt.ece1896.humblehome"
         minSdkVersion 21
+        //minSdkVersion 15
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
@@ -29,6 +30,14 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:25.4.0'
     implementation 'com.android.support:design:25.4.0'
     implementation 'com.android.support:support-v4:25.4.0'
+    //implementation 'com.android.support:appcompat-v7:25.1.0'
+    //implementation 'com.android.support:design:25.1.0'
+    //implementation 'com.android.support:support-v4:25.1.0'
+
+    implementation('com.amazonaws:aws-android-sdk-mobile-client:2.6.+@aar') {
+        transitive = true
+    }
+    implementation 'com.amazonaws:aws-android-sdk-ddb-mapper:2.6.+'
 
     // Library for creating charts and graphs
     implementation 'com.jjoe64:graphview:4.2.1'

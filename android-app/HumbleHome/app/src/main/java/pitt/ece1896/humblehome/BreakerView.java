@@ -102,6 +102,13 @@ public class BreakerView extends TableLayout {
         requestLayout();
     }
 
+    public String toString() {
+        return "breakerId: " + this.id + "\n" +
+               "label: " + this.label + "\n" +
+               "description: " + this.description + "\n" +
+               "breakerState: " + this.breakerState;
+    }
+
     public enum BreakerState { UNKNOWN, ON, OFF, ALWAYS_ON };
 
 }
