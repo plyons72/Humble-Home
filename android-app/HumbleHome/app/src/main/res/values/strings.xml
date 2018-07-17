@@ -7,4 +7,10 @@
 
     <string name="switch_on">ON</string>
     <string name="switch_off">OFF</string>
+
+    <string name="dialog_title">Edit Breaker Information</string>
+    <string name="dialog_label">Label:</string>
+    <string name="dialog_description">Description:</string>
+    <string name="dialog_ok">OK</string>
+    <string name="dialog_cancel">Cancel</string>
 </resources>

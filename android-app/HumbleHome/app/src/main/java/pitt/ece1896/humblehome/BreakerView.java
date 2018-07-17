@@ -10,8 +10,6 @@ import android.widget.Switch;
 import android.widget.TableLayout;
 import android.widget.TextView;
 
-import pitt.ece1896.humblehome.MainActivity;
-
 public class BreakerView extends TableLayout {
 
     private static final String TAG = "BreakerView";
@@ -71,10 +69,11 @@ public class BreakerView extends TableLayout {
     }
 
     public void setLabel(String label) {
+        Log.d(TAG, "new label: " + label);
         this.label = label;
         this.labelView.setText(label);
-        invalidate();
-        requestLayout();
+        //invalidate();
+        //requestLayout();
     }
 
     public String getDescription() {

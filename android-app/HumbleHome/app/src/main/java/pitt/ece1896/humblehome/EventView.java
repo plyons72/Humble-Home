@@ -15,6 +15,8 @@ import pitt.ece1896.humblehome.BreakerView.BreakerState;
 
 public class EventView extends TableLayout {
 
+    private static final String TAG = "EventView";
+
     private LinearLayout layout;
 
     private TextView switchState;

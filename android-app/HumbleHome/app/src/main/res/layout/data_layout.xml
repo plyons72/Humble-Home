@@ -26,7 +26,7 @@
                 android:layout_margin="20dp"/>
 
         </LinearLayout>
-        
+
     </ScrollView>
 
 </RelativeLayout>

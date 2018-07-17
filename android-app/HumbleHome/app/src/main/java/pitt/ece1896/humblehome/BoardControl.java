@@ -15,7 +15,7 @@ public class BoardControl extends Fragment {
     private static final String TAG = "BoardControl";
 
     // Number of pages to show
-    private static final int NUM_PAGES = 2;
+    private static final int NUM_PAGES = /*2*/1;
 
     // The pager widget (handles animation and allows swiping horizontally)
     private ViewPager pager;
@@ -56,8 +56,8 @@ public class BoardControl extends Fragment {
 
         @Override
         public Fragment getItem(int index) {
-            if (index == 0) return new ManualControl();
-            else return new ScheduleControl();
+            /*if (index == 0)*/ return new ManualControl();
+            //else return new ScheduleControl();
         }
 
         @Override
