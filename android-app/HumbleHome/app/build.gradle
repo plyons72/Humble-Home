@@ -4,7 +4,7 @@ android {
     compileSdkVersion 25
     defaultConfig {
         applicationId "pitt.ece1896.humblehome"
-        minSdkVersion 14
+        minSdkVersion 21
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
@@ -29,4 +29,7 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:25.4.0'
     implementation 'com.android.support:design:25.4.0'
     implementation 'com.android.support:support-v4:25.4.0'
+
+    // Library for creating charts and graphs
+    implementation 'com.jjoe64:graphview:4.2.1'
 }

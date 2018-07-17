@@ -8,6 +8,8 @@ import android.view.ViewGroup;
 
 public class Settings extends Fragment {
 
+    private static final String TAG = "Settings";
+
     public static Settings newInstance() {
         Settings fragment = new Settings();
         return fragment;

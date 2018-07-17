@@ -10,6 +10,8 @@ import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String TAG = "MainActivity";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -20,7 +22,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 Fragment selectedFragment = null;
-                switch(item.getItemId()) {
+                switch (item.getItemId()) {
                     case R.id.control_item:
                         selectedFragment = BoardControl.newInstance();
                         break;
@@ -43,5 +45,4 @@ public class MainActivity extends AppCompatActivity {
         transaction.replace(R.id.frame_layout, BoardControl.newInstance());
         transaction.commit();
     }
-
 }

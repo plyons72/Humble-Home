@@ -2,13 +2,19 @@ package pitt.ece1896.humblehome;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TableLayout;
 import android.widget.TextView;
 
+import pitt.ece1896.humblehome.MainActivity;
+
 public class BreakerView extends TableLayout {
+
+    private static final String TAG = "BreakerView";
 
     private LinearLayout layout;
 
@@ -32,7 +38,7 @@ public class BreakerView extends TableLayout {
         init(context);
     }
 
-    private void init(Context context) {
+    private void init(final Context context) {
         String service = Context.LAYOUT_INFLATER_SERVICE;
         LayoutInflater layoutInflater = (LayoutInflater) getContext().getSystemService(service);
         layout = (TableLayout) layoutInflater.inflate(R.layout.breaker_view, this, true);
@@ -41,6 +47,12 @@ public class BreakerView extends TableLayout {
         labelView = (TextView) layout.findViewById(R.id.labelView);
         descriptionView = (TextView) layout.findViewById(R.id.descriptionView);
         breakerSwitch = (Switch) layout.findViewById(R.id.breakerSwitch);
+        breakerSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Log.d(TAG, "switch: " + id + " isChecked: " + isChecked);
+            }
+        });
     }
 
     public int getId() {

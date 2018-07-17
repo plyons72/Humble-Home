@@ -11,6 +11,8 @@ import java.util.Date;
 
 public class ScheduleControl extends Fragment {
 
+    private static final String TAG = "ScheduleControl";
+
     public static EventView[] events;
 
     public static ScheduleControl newInstance() {

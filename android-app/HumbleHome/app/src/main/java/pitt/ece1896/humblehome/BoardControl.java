@@ -12,6 +12,8 @@ import android.view.ViewGroup;
 
 public class BoardControl extends Fragment {
 
+    private static final String TAG = "BoardControl";
+
     // Number of pages to show
     private static final int NUM_PAGES = 2;
 

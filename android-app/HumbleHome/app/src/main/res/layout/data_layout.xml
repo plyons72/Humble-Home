@@ -4,10 +4,29 @@
     android:layout_height="match_parent"
     tools:context="pitt.ece1896.humblehome.DataAnalysis">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Data Analysis"
-        android:textSize="30sp" />
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <LinearLayout
+            android:id="@+id/dataLayout"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <com.jjoe64.graphview.GraphView
+                android:id="@+id/realTimeGraph"
+                android:layout_width="match_parent"
+                android:layout_height="250dp"
+                android:layout_margin="20dp"/>
+
+            <com.jjoe64.graphview.GraphView
+                android:id="@+id/barGraph"
+                android:layout_width="match_parent"
+                android:layout_height="250dp"
+                android:layout_margin="20dp"/>
+
+        </LinearLayout>
+        
+    </ScrollView>
 
 </RelativeLayout>
