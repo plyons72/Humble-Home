@@ -254,26 +254,7 @@
       "resolved": "https://registry.npmjs.org/minimist/-/minimist-1.2.0.tgz",
       "version": "1.2.0"
     },
-    "mqtt": {
-      "integrity": "sha512-egP6gbLES2aELu6LNtwOtpC779Hu7LVTYm6HKE5wJdTuX2jZ4JOOtK7HS2JWyW6IfKN5U99u/VU155tLwFAKbQ==",
-      "requires": {
-        "commist": "1.0.0",
-        "concat-stream": "1.6.2",
-        "end-of-stream": "1.4.1",
-        "help-me": "1.1.0",
-        "inherits": "2.0.3",
-        "minimist": "1.2.0",
-        "mqtt-packet": "5.6.0",
-        "pump": "3.0.0",
-        "readable-stream": "2.3.6",
-        "reinterval": "1.1.0",
-        "split2": "2.2.0",
-        "websocket-stream": "5.1.2",
-        "xtend": "4.0.1"
-      },
-      "resolved": "https://registry.npmjs.org/mqtt/-/mqtt-2.18.2.tgz",
-      "version": "2.18.2"
-    },
+    "mqtt": "^2.18.2",
     "mqtt-packet": {
       "integrity": "sha512-QECe2ivqcR1LRsPobRsjenEKAC3i1a5gmm+jNKJLrsiq9PaSQ18LlKFuxvhGxWkvGEPadWv6rKd31O4ICqS1Xw==",
       "requires": {
