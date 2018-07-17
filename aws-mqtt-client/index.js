@@ -2,14 +2,12 @@
 var mqtt = require('mqtt');
 
 var serverUri = "ssl://b-f6c789c3-b708-4d73-b004-2a6245bd7c5d-1.mq.us-east-1.amazonaws.com:8883";
-var clientId = "aws-lambda";
+var clientId = "aws-client";
 var username = "user";
 var password = "humblehome1896";
 
-var BreakerInfoRequest = "BreakerInfoRequest";
-var BreakerInfoResponse = "BreakerInfoResponse";
 var BreakerState = "BreakerState";
-
+var BreakerData = "BreakerData";
 
 var client = mqtt.connect(serverUri, {
 	clientId: clientId,
@@ -20,6 +18,9 @@ var client = mqtt.connect(serverUri, {
     
 client.on('connect', function(connack) {
     console.log('connected to ' + serverUri); 
+	
+	client.subscribe(BreakerState);
+	client.subscribe(BreakerData);
 });
     
 client.on('reconnect', function() {
@@ -31,5 +32,5 @@ client.on('error', function(error) {
 });
     
 client.on('message', function(topic, message) {
-    console.log('topic: ' + topic + '\nmessage: ' + message); 
+    console.log('topic: ' + topic + '\nmessage: ' + message);
 });
