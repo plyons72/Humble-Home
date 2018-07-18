@@ -63,7 +63,7 @@ public class DataAnalysis extends Fragment {
     private void createBarGraph(View view) {
         LinearLayout layout = (LinearLayout) view.findViewById(R.id.dataLayout);
         GraphView graph = (GraphView) layout.findViewById(R.id.barGraph);
-        graph.setTitle("kWh/day");
+        graph.setTitle("Daily kWh");
         BarGraphSeries<DataPoint> series = new BarGraphSeries<>(new DataPoint[] {
                 new DataPoint(0,1),
                 new DataPoint(1,2),
