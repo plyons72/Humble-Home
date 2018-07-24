@@ -22,6 +22,8 @@ SoftwareSerial soft(13, 12); // RX, TX
 int status = WL_IDLE_STATUS;
 unsigned long lastSend;
 
+#define humblehome_server "ec2-54-209-17-201.compute-1.amazonaws.com"
+
 
 void setup() {
   // Initialize serial for debugging
@@ -32,7 +34,7 @@ void setup() {
   InitWiFi();
 
   // Endpoint for the server
-  char humblehome_server[] = "ec2-54-209-17-201.compute-1.amazonaws.com";
+  //char humblehome_server[] = "ec2-54-209-17-201.compute-1.amazonaws.com";
 
   // Set up server connection on port 1883
   client.setServer( humblehome_server, 1883 );
@@ -94,6 +96,10 @@ void getAndSendData()
     current_constant = -3.7468;
   }
 
+  voltage_in *= analogRead(A0);
+  current_in *= analogRead(A1);
+  current_in -= current_constant;
+  
   Serial.print("Voltage: ");
   Serial.print(voltage_in);
   Serial.print(" Volts\t");
