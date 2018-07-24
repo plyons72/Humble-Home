@@ -4,20 +4,15 @@
 #include <PubSubClient.h>
 #include <SoftwareSerial.h>
 
-
+/*
+// Class WiFi Network
 #define SSID "Embedded Systems Class"
 #define PASS "embedded1234"
+*/
 
-/*
 // Home WiFi Network
 #define SSID "LAN-Solo"
 #define PASS "CRtDDc4X"
-*/
-// Token for humblehome device on thingsboard server
-#define TOKEN "lMo6q9a6jUKbqTGLtTVH"
-
-// Endpoint for the server
-char humblehome_server[] = "ec2-54-209-17-201.compute-1.amazonaws.com";
 
 // Initialize the Ethernet client object
 WiFiEspClient espClient;
@@ -29,10 +24,17 @@ unsigned long lastSend;
 
 
 void setup() {
-  // initialize serial for debugging
+  // Initialize serial for debugging
   Serial.begin(9600);
+
+  // Reference for analog in should be 5v
   analogReference(DEFAULT);
   InitWiFi();
+
+  // Endpoint for the server
+  char humblehome_server[] = "ec2-54-209-17-201.compute-1.amazonaws.com";
+
+  // Set up server connection on port 1883
   client.setServer( humblehome_server, 1883 );
 }
 
@@ -40,7 +42,7 @@ void loop() {
   status = WiFi.status();
   if ( status != WL_CONNECTED) {
     while ( status != WL_CONNECTED) {
-      Serial.print("Attempting to connect to WPA SSID: ");
+      Serial.print("Connecting to: ");
       Serial.println(SSID);
       // Connect to WPA/WPA2 network
       status = WiFi.begin(SSID, PASS);
@@ -63,45 +65,45 @@ void loop() {
 
 void getAndSendData()
 {
-  // Get multiplier to find the real life AC/DC voltages represented by our scaled down circuit
-  // .0049 multiplied by the analog read value gives voltage between 0 and 5
-  float ac_voltage = .1176; // .0049 * scaling factor of 24
-  float dc_voltage = .049; // .0049 * scaling factor of 10
+  // Determines whether we do AC or DC calculation
+  boolean ac_load = false;
 
-  
-  
-  Serial.println("Collecting Circuit Data");
+  float voltage_in;
+  float current_in;
+  float current_constant;
 
-  // Voltage should be read in through A0
-  //ac_voltage *= analogRead(A0);
-  dc_voltage *= analogRead(A0);
+  // AC Load
+  if (ac_load) { 
+    // .0049 (conversion factor for analog read) * 24 (scaling factor for AC current, where 5V = 120V)
+    voltage_in = .1176;
 
-  // Calculate the current for DC current given Aryana's Equations (.0049 = analog read conversion * 10 (scaling factor)
-  float dc_current = .049 * analogRead(A1);
-  dc_current *= 1.4898;
-  dc_current -= 3.7468;
+    // .0049 (conversion factor for analog read) * .0164 (slope from Aryana's equation for AC current)
+    current_in = .00008036;
+    current_constant = -.0001;
+  }
 
-  //float ac_power = ac_current * ac_voltage * ac_power_factor;
-  float dc_power = dc_current * dc_voltage * .08;
+  // DC Load
+  else {
+    // .0049 (conversion factor for analog read) * 10 (scaling factor for AC current, where 5V = 50V)
+    voltage_in = .049; 
 
-  /*
-  float ac_current = .0049 * analogRead(A0) * 10;
-  ac_current *= .0164;
-  ac_current -= .0001;
-  */
+    // .0049 (conversion factor for analog read) * 1.4898 (slope from Aryana's equation for DC current)
+    current_in = .00730002;
+
+    // Constant term to add to current_in to get the final current value
+    current_constant = -3.7468;
+  }
 
   Serial.print("Voltage: ");
-  Serial.print(dc_voltage);
+  Serial.print(voltage_in);
   Serial.print(" Volts\t");
   Serial.print("Current: ");
-  Serial.print(dc_current);
+  Serial.print(current_in);
   Serial.print(" Amps ");
 
-  //String
-
-  String voltage = String(dc_voltage);
-  String current = String(dc_current);
-  String power = String(dc_power);
+  //String representations of voltage, current, and power
+  String voltage = String(voltage_in);
+  String current = String(current_in);
 
 
   // Just debug messages
@@ -109,15 +111,15 @@ void getAndSendData()
   Serial.print(voltage); 
   Serial.print( "," );
   Serial.print(current); 
-  Serial.print( "," );
-  Serial.print(power);
   Serial.print( "]   -> " );
 
   // Prepare a JSON payload string
   String payload = "{";
-  payload += "\"voltage\":"; payload += voltage; payload += ",";
-  payload += "\"current\":"; payload += current;
-  payload += "\"power\":"; payload += power;
+  payload += "\"voltage\":"; 
+  payload += voltage; 
+  payload += ",";
+  payload += "\"current\":"; 
+  payload += current;
   payload += "}";
 
   // Send payload
@@ -129,24 +131,23 @@ void getAndSendData()
 
 void InitWiFi()
 {
-  // initialize serial for ESP module
+  // Initialize serial connection for WiFi
   soft.begin(9600);
   
-  // initialize ESP module
+  // Initialize WiFi
   WiFi.init(&soft);
-  // check for the presence of the shield
+  // Make sure WiFi is present
   if (WiFi.status() == WL_NO_SHIELD) {
     Serial.println("WiFi shield not present");
-    // don't continue
     while (true);
   }
 
   Serial.println("Connecting to AP ...");
-  // attempt to connect to WiFi network
+  // Attempt to make connection
   while ( status != WL_CONNECTED) {
-    Serial.print("Attempting to connect to WPA SSID: ");
+    Serial.print("Attempting to connect to ");
     Serial.println(SSID);
-    // Connect to WPA/WPA2 network
+    // Connect to network
     status = WiFi.begin(SSID, PASS);
     delay(500);
   }
@@ -157,11 +158,16 @@ void reconnect() {
   // Loop until we're reconnected
   while (!client.connected()) {
     Serial.print("Connecting to MQTT Server ...");
+
+    // Token for humblehome device on thingsboard server
+    char iot_token[] = "lMo6q9a6jUKbqTGLtTVH";
+
     // Attempt to connect (clientId, username, password)
-    //if ( client.connect("embedded", mqtt_user, mqtt_pass) ) {
-    if ( client.connect("HUMBLEHOME", TOKEN, NULL) ) {
+    if ( client.connect("HUMBLEHOME", iot_token, NULL) ) {
       Serial.println( "[DONE]" );
-    } else {
+    } 
+    
+    else {
       Serial.print( "[FAILED] [ rc = " );
       Serial.print( client.state() );
       Serial.println( " : retrying in 5 seconds]" );
