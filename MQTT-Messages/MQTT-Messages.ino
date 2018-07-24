@@ -4,27 +4,20 @@
 #include <PubSubClient.h>
 #include <SoftwareSerial.h>
 
-/*
-#define WIFI_AP "Embedded Systems Class"
-#define WIFI_PASSWORD "embedded1234"
-*/
 
-#define WIFI_AP "LAN-Solo"
-#define WIFI_PASSWORD "CRtDDc4X"
+#define SSID "Embedded Systems Class"
+#define PASS "embedded1234"
 
-#define TOKEN "OEgIMF0bBPlBPgIQzVsh"
 /*
-char mqtt_server[] = "b-f6c789c3-b708-4d73-b004-2a6245bd7c5d-1.mq.us-east-1.amazonaws.com";
-char mqtt_client[] = "b-f6c789c3-b708-4d73-b004-2a6245bd7c5d-1";
-char mqtt_user[] = "user";
-char mqtt_pass[] = "humblehome1896";
+// Home WiFi Network
+#define SSID "LAN-Solo"
+#define PASS "CRtDDc4X"
 */
-/*
-char mqtt_server[] = "mqtt.lazyengineers.com";
-char mqtt_client[] = "b-f6c789c3-b708-4d73-b004-2a6245bd7c5d-1";
-char mqtt_user[] = "lazyengineers";
-char mqtt_pass[] = "lazyengineers";*/
-char thingsboardServer[] = "demo.thingsboard.io";
+// Token for humblehome device on thingsboard server
+#define TOKEN "lMo6q9a6jUKbqTGLtTVH"
+
+// Endpoint for the server
+char humblehome_server[] = "ec2-54-209-17-201.compute-1.amazonaws.com";
 
 // Initialize the Ethernet client object
 WiFiEspClient espClient;
@@ -40,7 +33,7 @@ void setup() {
   Serial.begin(9600);
   analogReference(DEFAULT);
   InitWiFi();
-  client.setServer( thingsboardServer, 1883 );
+  client.setServer( humblehome_server, 1883 );
 }
 
 void loop() {
@@ -48,9 +41,9 @@ void loop() {
   if ( status != WL_CONNECTED) {
     while ( status != WL_CONNECTED) {
       Serial.print("Attempting to connect to WPA SSID: ");
-      Serial.println(WIFI_AP);
+      Serial.println(SSID);
       // Connect to WPA/WPA2 network
-      status = WiFi.begin(WIFI_AP, WIFI_PASSWORD);
+      status = WiFi.begin(SSID, PASS);
       delay(500);
     }
     Serial.println("Connected to AP");
@@ -72,8 +65,10 @@ void getAndSendData()
 {
   // Get multiplier to find the real life AC/DC voltages represented by our scaled down circuit
   // .0049 multiplied by the analog read value gives voltage between 0 and 5
-  float ac_voltage = .0049 * 24;
-  float dc_voltage = .0049 * 10;
+  float ac_voltage = .1176; // .0049 * scaling factor of 24
+  float dc_voltage = .049; // .0049 * scaling factor of 10
+
+  
   
   Serial.println("Collecting Circuit Data");
 
@@ -81,10 +76,13 @@ void getAndSendData()
   //ac_voltage *= analogRead(A0);
   dc_voltage *= analogRead(A0);
 
-  // Calculate the current for DC current given Aryana's Equations
-  float dc_current = .0049 * analogRead(A1) * 10;
+  // Calculate the current for DC current given Aryana's Equations (.0049 = analog read conversion * 10 (scaling factor)
+  float dc_current = .049 * analogRead(A1);
   dc_current *= 1.4898;
   dc_current -= 3.7468;
+
+  //float ac_power = ac_current * ac_voltage * ac_power_factor;
+  float dc_power = dc_current * dc_voltage * .08;
 
   /*
   float ac_current = .0049 * analogRead(A0) * 10;
@@ -99,20 +97,27 @@ void getAndSendData()
   Serial.print(dc_current);
   Serial.print(" Amps ");
 
+  //String
+
   String voltage = String(dc_voltage);
   String current = String(dc_current);
+  String power = String(dc_power);
 
 
   // Just debug messages
   Serial.print( "Sending Voltage and Current : [" );
-  Serial.print( voltage ); Serial.print( "," );
-  Serial.print( current );
+  Serial.print(voltage); 
+  Serial.print( "," );
+  Serial.print(current); 
+  Serial.print( "," );
+  Serial.print(power);
   Serial.print( "]   -> " );
 
   // Prepare a JSON payload string
   String payload = "{";
   payload += "\"voltage\":"; payload += voltage; payload += ",";
   payload += "\"current\":"; payload += current;
+  payload += "\"power\":"; payload += power;
   payload += "}";
 
   // Send payload
@@ -140,9 +145,9 @@ void InitWiFi()
   // attempt to connect to WiFi network
   while ( status != WL_CONNECTED) {
     Serial.print("Attempting to connect to WPA SSID: ");
-    Serial.println(WIFI_AP);
+    Serial.println(SSID);
     // Connect to WPA/WPA2 network
-    status = WiFi.begin(WIFI_AP, WIFI_PASSWORD);
+    status = WiFi.begin(SSID, PASS);
     delay(500);
   }
   Serial.println("Connected to AP");
@@ -154,7 +159,7 @@ void reconnect() {
     Serial.print("Connecting to MQTT Server ...");
     // Attempt to connect (clientId, username, password)
     //if ( client.connect("embedded", mqtt_user, mqtt_pass) ) {
-    if ( client.connect("Arduino Uno Device", TOKEN, NULL) ) {
+    if ( client.connect("HUMBLEHOME", TOKEN, NULL) ) {
       Serial.println( "[DONE]" );
     } else {
       Serial.print( "[FAILED] [ rc = " );
