@@ -15,6 +15,7 @@ import static pitt.ece1896.humblehome.ManualControl.updateBreaker;
 public class BreakerInfoDialog extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        final int index = getArguments().getInt("index");
         final int breakerId = getArguments().getInt("breakerId");
         final String label = getArguments().getString("label");
         final String description = getArguments().getString("description");
@@ -25,8 +26,8 @@ public class BreakerInfoDialog extends DialogFragment {
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.dialog_view, null);
         TextView breakerIdView = (TextView)view.findViewById(R.id.breakerId);
-        EditText labelView = (EditText)view.findViewById(R.id.label);
-        EditText descriptionView = (EditText)view.findViewById(R.id.description);
+        final EditText labelView = (EditText)view.findViewById(R.id.label);
+        final EditText descriptionView = (EditText)view.findViewById(R.id.description);
         //Button okBtn = (Button)view.findViewById(R.id.okBtn);
         //Button cancelBtn = (Button)view.findViewById(R.id.cancelBtn);
 
@@ -37,7 +38,7 @@ public class BreakerInfoDialog extends DialogFragment {
         builder.setView(view)
             .setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        updateBreaker(breakerId, label, description);
+                        updateBreaker(index, labelView.getText().toString(), descriptionView.getText().toString());
                     }
                 })
                 .setNegativeButton(R.string.dialog_cancel, new DialogInterface.OnClickListener() {
@@ -45,8 +46,8 @@ public class BreakerInfoDialog extends DialogFragment {
                         // User cancelled the dialog
                     }
                 });
-        // Create the AlertDialog object and return it
 
+        // Create the AlertDialog object and return it
         final AlertDialog dialog = builder.create();
         dialog.setOnShowListener( new DialogInterface.OnShowListener() {
             @Override

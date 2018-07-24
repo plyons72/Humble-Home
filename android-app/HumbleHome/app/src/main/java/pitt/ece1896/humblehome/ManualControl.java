@@ -20,6 +20,8 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import pitt.ece1896.humblehome.BreakerView.BreakerState;
+
 public class ManualControl extends Fragment {
 
     private static final String TAG = "ManualControl";
@@ -66,9 +68,11 @@ public class ManualControl extends Fragment {
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
                     Log.d(TAG, MQTTManager.MQTT_TAG + "Message arrived\nTopic: " + topic + "\nPayload: " + new String(message.getPayload()));
 
+                    String payload = new String(message.getPayload());
                     if (topic.equals(MQTTManager.SetBreakerInfo)) {
-                        String payload = new String(message.getPayload());
                         parseBreakerInfo(payload);
+                    } else if (topic.equals(MQTTManager.SetBreakerState)) {
+                        parseBreakerState(payload);
                     }
                 }
 
@@ -92,13 +96,14 @@ public class ManualControl extends Fragment {
         return manualView;
     }
 
-    public static void updateBreaker(int breakerId, String label, String description) {
-        if (breakers != null && breakers.size() > breakerId) {
-            Log.d(TAG, "updating breaker id: " + breakerId);
-            breakers.get(breakerId).setLabel(label);
-            breakers.get(breakerId).setDescription(description);
+    public static void updateBreaker(int breakerIndex, String label, String description) {
+        if (breakers != null && breakers.size() > breakerIndex) {
+            Log.d(TAG, "updating breaker id: " + breakers.get(breakerIndex).getId());
+            breakers.get(breakerIndex).setLabel(label);
+            breakers.get(breakerIndex).setDescription(description);
 
-            MainActivity.mqttManager.publishToTopic(MQTTManager.PutBreakerInfo, breakers.get(breakerId).toJson().getBytes());
+            Log.d(TAG, "updated breaker: " + breakers.get(breakerIndex).toString());
+            MainActivity.mqttManager.publishToTopic(MQTTManager.PutBreakerInfo, breakers.get(breakerIndex).toJson().getBytes());
         }
     }
 
@@ -117,6 +122,7 @@ public class ManualControl extends Fragment {
 
                             DialogFragment breakerInfoDialog = new BreakerInfoDialog();
                             Bundle args = new Bundle();
+                            args.putInt("index", breakers.indexOf(breakerView));
                             args.putInt("breakerId", breakerView.getId());
                             args.putString("label", breakerView.getLabel());
                             args.putString("description", breakerView.getDescription());
@@ -136,11 +142,34 @@ public class ManualControl extends Fragment {
                     if (breakerJson.has("description")) {
                         breakerView.setDescription(breakerJson.getJSONObject("description").getString("S"));
                     }
-                    if (breakerJson.has("state")) {
-                        breakerView.setBreakerState(BreakerView.BreakerState.values()[breakerJson.getJSONObject("state").getInt("N")]);
+                    if (breakerJson.has("breakerState")) {
+                        breakerView.setBreakerState(BreakerView.BreakerState.values()[breakerJson.getJSONObject("breakerState").getInt("N")]);
                     }
                     breakers.add(breakerView);
                     layout.addView(breakerView);
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, e.toString());
+            e.printStackTrace();
+        }
+    }
+
+    private void parseBreakerState(String state) {
+        try {
+            JSONObject jsonObject = new JSONObject(state);
+            if (jsonObject.has("breakerId")) {
+                int breakerId = jsonObject.getInt("breakerId");
+                BreakerState breakerState = BreakerState.UNKNOWN;
+                if (jsonObject.has("breakerState")) {
+                    breakerState = BreakerState.values()[jsonObject.getInt("breakerState")];
+                }
+
+                // TODO: improve efficiency for large list of breakers
+                for (BreakerView breaker : breakers) {
+                    if (breaker.getId() == breakerId) {
+                        breaker.setBreakerState(breakerState);
+                    }
                 }
             }
         } catch (Exception e) {

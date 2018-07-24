@@ -49,11 +49,11 @@ public class BreakerView extends TableLayout {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 Log.d(TAG, "switch: " + id + " isChecked: " + isChecked);
-                String breakerStateJson = "{" +
+                String breakerStateJson = "{ " +
                                           "breakerId: " + id + ", " +
                                           "breakerState: " + (isChecked ? BreakerState.ON : BreakerState.OFF) +
-                                          "}";
-                MainActivity.mqttManager.publishToTopic(MQTTManager.PutBreakerInfo, breakerStateJson.getBytes());
+                                          " }";
+                MainActivity.mqttManager.publishToTopic(MQTTManager.PutBreakerState, breakerStateJson.getBytes());
             }
         });
     }
@@ -65,8 +65,8 @@ public class BreakerView extends TableLayout {
     public void setId(int id) {
         this.id = id;
         this.idView.setText("Breaker ID: " + id);
-        invalidate();
-        requestLayout();
+        //invalidate();
+        //requestLayout();
     }
 
     public String getLabel() {
@@ -74,7 +74,6 @@ public class BreakerView extends TableLayout {
     }
 
     public void setLabel(String label) {
-        Log.d(TAG, "new label: " + label);
         this.label = label;
         this.labelView.setText(label);
         //invalidate();
@@ -88,8 +87,8 @@ public class BreakerView extends TableLayout {
     public void setDescription(String description) {
         this.description = description;
         this.descriptionView.setText(description);
-        invalidate();
-        requestLayout();
+        //invalidate();
+        //requestLayout();
     }
 
     public BreakerState getBreakerState() {
@@ -106,8 +105,8 @@ public class BreakerView extends TableLayout {
         } else {
             this.breakerSwitch.setChecked(false);
         }
-        invalidate();
-        requestLayout();
+        //invalidate();
+        //requestLayout();
     }
 
     public String toString() {
@@ -118,14 +117,16 @@ public class BreakerView extends TableLayout {
     }
 
     public String toJson() {
-        return "{" +
-                "breakerId: " + this.id + ", " +
-                "label: " + this.label + ", " +
-                "description: " + this.description + ", " +
-                "breakerState: " + this.breakerState.ordinal() +
-                "}";
+        return "{ " +
+                "\"breakerId\": \"" + this.id + "\", " +
+                "\"label\": \"" + this.label + "\", " +
+                "\"description\": \"" + this.description + "\", " +
+                "\"breakerState\": \"" + this.breakerState.ordinal() + "\"" +
+                " }";
     }
 
     public enum BreakerState { UNKNOWN, ON, OFF, ALWAYS_ON };
+
+    public enum BreakerType { AC, DC };
 
 }
