@@ -1,5 +1,6 @@
 
 var ddb_access = require('./dynamodb_access');
+var power_factor = require('./power_factor');
 var peak_shaving = require('./peak_shaving');
 
 var mqtt = require('mqtt');
@@ -17,8 +18,10 @@ var username = 'user';
 var password = 'humblehome1896';
 
 var GetBreakerInfo = 'GetBreakerInfo';
+var PutBreakerInfo = 'PutBreakerInfo';
 var SetBreakerInfo = 'SetBreakerInfo';
 var GetBreakerState = 'GetBreakerState';
+var PutBreakerState = 'PutBreakerState';
 var SetBreakerState = 'SetBreakerState';
 var BreakerData = 'BreakerData';
 
@@ -33,8 +36,10 @@ client.on('connect', function(connack) {
     console.log('connected to ' + serverUri); 
 	
 	client.subscribe(GetBreakerInfo);
+	client.subscribe(PutBreakerInfo);
 	client.subscribe(SetBreakerInfo);
 	client.subscribe(GetBreakerState);
+	client.subscribe(PutBreakerState);
 	client.subscribe(SetBreakerState);
 	client.subscribe(BreakerData);
 });
@@ -51,9 +56,29 @@ client.on('message', function(topic, message) {
     console.log('topic: ' + topic + '\nmessage: ' + message);
 	
 	if (topic == GetBreakerInfo) {
-		ddb_access.getBreakerInfo(message.toString(), function(result) {
-			client.publish(SetBreakerInfo, result);
-		});	
-	} else if (topic == BreakerData)
+		if (message.toString() == '*') {
+			ddb_access.getBreakerInfo(function(response) {
+				client.publish(SetBreakerInfo, JSON.stringify(response));
+			});
+		} else {
+			ddb_access.getBreakerInfoById(message.toString(), function(response) {
+				client.publish(SetBreakerInfo, JSON.stringify(response));
+			});	
+		}
+	} else if (topic == PutBreakerInfo) {
+		ddb_access.putBreakerInfoById(JSON.parse(message), function(response) {
+			// Do nothing?
+		});
+	} else if (topic == BreakerData) {
+		var now = new Date(Date.now());
+		var data = {};
+		data.timestamp = now.toISOString();
+		data.power = Number(message).toString();	// Remove \r at end of line
+		console.log(data);
+		//data.current = ;
+		//data.voltage = ;
+		//data.power = ;
+		//ddb_access.putBreakerData(data);
 		peak_shaving.peak_detect(Number(message));
+	}
 });
