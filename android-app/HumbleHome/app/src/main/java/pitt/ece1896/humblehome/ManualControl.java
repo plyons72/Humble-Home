@@ -102,7 +102,6 @@ public class ManualControl extends Fragment {
             breakers.get(breakerIndex).setLabel(label);
             breakers.get(breakerIndex).setDescription(description);
 
-            Log.d(TAG, "updated breaker: " + breakers.get(breakerIndex).toString());
             MainActivity.mqttManager.publishToTopic(MQTTManager.PutBreakerInfo, breakers.get(breakerIndex).toJson().getBytes());
         }
     }
@@ -169,6 +168,8 @@ public class ManualControl extends Fragment {
                 for (BreakerView breaker : breakers) {
                     if (breaker.getId() == breakerId) {
                         breaker.setBreakerState(breakerState);
+
+                        MainActivity.mqttManager.publishToTopic(MQTTManager.PutBreakerInfo, breaker.toJson().getBytes());
                     }
                 }
             }
