@@ -12,6 +12,7 @@ var username = 'user';
 var password = 'humblehome1896';
 
 var GetBreakerInfo = 'GetBreakerInfo';
+var PutBreakerInfo = 'PutBreakerInfo';
 var SetBreakerInfo = 'SetBreakerInfo';
 
 var client = mqtt.connect(serverUri, {
@@ -26,11 +27,17 @@ client.on('connect', function(connack) {
 	
 	client.subscribe(SetBreakerInfo);
 	
-	for (var i = 1; i <= 32; i++) {
+	/*for (var i = 1; i <= 32; i++) {
 		client.publish(GetBreakerInfo, String(i));
 		// Wait 5 seconds
 		sleep(5000);
-	}
+	}*/
+	
+	//client.publish(GetBreakerInfo, '*');
+	
+	//client.publish(PutBreakerInfo, '{ "breakerId": "2", "label": "Living Room", "description": "Lights, TV, Computer", "breakerState": "1" }');
+	
+	client.publish('SetBreakerState', '{ "breakerId": "2", "breakerState": "2" }');
 });
     
 client.on('reconnect', function() {

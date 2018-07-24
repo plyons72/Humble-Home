@@ -30,9 +30,6 @@ client.on('connect', function(connack) {
 		if (!error) {
 			var loads = data.toString().split('\n');
 			
-			//console.log(loads[0]);
-			//client.publish(BreakerData, loads[0]);
-			
 			for (var i = 0; i < loads.length; i++) {
 				console.log(loads[i]);
 				client.publish(BreakerData, loads[i]);
