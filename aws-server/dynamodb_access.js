@@ -13,7 +13,7 @@ var DATA_TABLE = '';
 
 module.exports = {
 	
-	getBreakerInfo: function (id) {
+	getBreakerInfo: function (id, callback) {
 		
 		console.log(id);
 		
@@ -28,10 +28,9 @@ module.exports = {
 		ddb.getItem(params, function(error, result) {
 			if (error) {
 				console.log(error, error.stack);
-				return error;
+				callback(JSON.stringify(error));
 			} else {
-				console.log(result);
-				return result;
+				callback(JSON.stringify(result));
 			}
 		});
 		

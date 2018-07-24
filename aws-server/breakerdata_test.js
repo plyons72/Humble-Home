@@ -2,11 +2,16 @@
 var mqtt = require('mqtt');
 var fs = require('fs');
 var sleep = require('system-sleep');
-
-var serverUri = "ssl://b-f6c789c3-b708-4d73-b004-2a6245bd7c5d-1.mq.us-east-1.amazonaws.com:8883";
-var clientId = "test-client";
-var username = "user";
-var password = "humblehome1896";
+/*
+var serverUri = 'tcp://ec2-54-209-17-201.compute-1.amazonaws.com:1883';
+var clientId = 'breaker-data-test';
+var username = 'euDErYuDo857MH6Y2sQs';
+var password = null;
+*/
+var serverUri = 'ssl://b-f6c789c3-b708-4d73-b004-2a6245bd7c5d-1.mq.us-east-1.amazonaws.com:8883';
+var clientId = 'breaker-data-test';
+var username = 'user';
+var password = 'humblehome1896';
 
 var BreakerData = "BreakerData";
 
