@@ -6,7 +6,6 @@ import android.util.Log;
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.DisconnectedBufferOptions;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
@@ -21,19 +20,19 @@ public class MQTTManager {
 
     public static final String MQTT_TAG = "MQTT - ";
     public static final String serverUri = "ssl://b-f6c789c3-b708-4d73-b004-2a6245bd7c5d-1.mq.us-east-1.amazonaws.com:8883";
-    private final String keystore_path = "";
     private final String clientId = "android-app";
     private final String username = "user";
     private final String password = "humblehome1896";
 
     public static final String GetBreakerInfo = "GetBreakerInfo";
     public static final String SetBreakerInfo = "SetBreakerInfo";
-    public static final String BreakerState = "BreakerState";
+    public static final String GetBreakerState = "GetBreakerState";
+    public static final String SetBreakerState = "SetBreakerState";
 
     public MQTTManager(Context context) {
         mqttAndroidClient = new MqttAndroidClient(context, serverUri, clientId);
 
-        mqttAndroidClient.setCallback(new MqttCallbackExtended() {
+        /*mqttAndroidClient.setCallback(new MqttCallbackExtended() {
             @Override
             public void connectComplete(boolean reconnect, String serverURI) {
                 if (reconnect) {
@@ -63,7 +62,7 @@ public class MQTTManager {
                     ex.printStackTrace();
                 }
             }
-        });
+        });*/
     }
 
     public boolean connected() {
@@ -79,8 +78,7 @@ public class MQTTManager {
                 mqttConnectOptions.setCleanSession(false);
                 mqttConnectOptions.setUserName(username);
                 mqttConnectOptions.setPassword(password.toCharArray());
-
-                //mqttConnectOptions.setSocketFactory(mqttAndroidClient.getSSLSocketFactory(this.getApplicationContext().getAssets().open(keystore_path), password));
+                mqttConnectOptions.setConnectionTimeout(0);
 
                 mqttAndroidClient.connect(mqttConnectOptions, null, new IMqttActionListener() {
                     @Override
@@ -99,7 +97,7 @@ public class MQTTManager {
                     }
                 });
 
-            } catch (/*IOException | */MqttException ex) {
+            } catch (MqttException ex) {
                 Log.e(TAG, MQTT_TAG + ex.toString());
                 ex.printStackTrace();
             }
@@ -112,6 +110,7 @@ public class MQTTManager {
 
     public void subscribeToTopic(String topic) {
         try {
+            Log.d(TAG, MQTT_TAG + "Attempting to subscribe to topic: " + topic);
             mqttAndroidClient.subscribe(topic, 0, null, new IMqttActionListener() {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
@@ -122,7 +121,17 @@ public class MQTTManager {
                 public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
                     Log.d(TAG, MQTT_TAG + "Failed to subscribe");
                 }
-            });
+            })/*.waitForCompletion()*/;
+        } catch (MqttException ex) {
+            Log.e(TAG, MQTT_TAG + ex.toString());
+            ex.printStackTrace();
+        }
+    }
+
+    public void subscribeToTopic(String topic, IMqttActionListener mqttActionListener) {
+        try {
+            Log.d(TAG, MQTT_TAG + "Attempting to subscribe to topic: " + topic);
+            mqttAndroidClient.subscribe(topic, 0, null, mqttActionListener);
         } catch (MqttException ex) {
             Log.e(TAG, MQTT_TAG + ex.toString());
             ex.printStackTrace();

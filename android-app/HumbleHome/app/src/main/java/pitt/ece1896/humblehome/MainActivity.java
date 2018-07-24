@@ -9,7 +9,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
 
+import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -25,6 +27,29 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
+        BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.navigation_bar);
+        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                Fragment selectedFragment = null;
+                switch (item.getItemId()) {
+                    case R.id.control_item:
+                        selectedFragment = BoardControl.newInstance();
+                        break;
+                    case R.id.data_item:
+                        selectedFragment = DataAnalysis.newInstance();
+                        break;
+                    case R.id.settings_item:
+                        selectedFragment = Settings.newInstance();
+                        break;
+                }
+                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                transaction.replace(R.id.frame_layout, selectedFragment);
+                transaction.commit();
+                return true;
+            }
+        });
+
         mqttManager = new MQTTManager(getApplicationContext());
         mqttManager.setCallback(new MqttCallbackExtended() {
             @Override
@@ -35,33 +60,30 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(TAG, MQTTManager.MQTT_TAG + "Connected to: " + MQTTManager.serverUri);
                 }
 
-                BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.navigation_bar);
-                bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-                    @Override
-                    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                        Fragment selectedFragment = null;
-                        switch (item.getItemId()) {
-                            case R.id.control_item:
-                                selectedFragment = BoardControl.newInstance();
-                                break;
-                            case R.id.data_item:
-                                selectedFragment = DataAnalysis.newInstance();
-                                break;
-                            case R.id.settings_item:
-                                selectedFragment = Settings.newInstance();
-                                break;
-                        }
-                        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                        transaction.replace(R.id.frame_layout, selectedFragment);
-                        transaction.commit();
-                        return true;
-                    }
-                });
+                /*mqttManager.subscribeToTopic(MQTTManager.GetBreakerInfo);
+                mqttManager.subscribeToTopic(MQTTManager.GetBreakerState);
 
                 // Manually display the first fragment when app first opens
                 FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                 transaction.replace(R.id.frame_layout, BoardControl.newInstance());
-                transaction.commit();
+                transaction.commit();*/
+
+                mqttManager.subscribeToTopic(MQTTManager.SetBreakerInfo, new IMqttActionListener() {
+                    @Override
+                    public void onSuccess(IMqttToken asyncActionToken) {
+                        Log.d(TAG, MQTTManager.MQTT_TAG + "Subscribed to " + MQTTManager.SetBreakerInfo);
+
+                        // Manually display the first fragment when app first opens
+                        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                        transaction.replace(R.id.frame_layout, BoardControl.newInstance());
+                        transaction.commit();
+                    }
+
+                    @Override
+                    public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                        Log.e(TAG, MQTTManager.MQTT_TAG + "Failed to subscribe to " + MQTTManager.GetBreakerInfo);
+                    }
+                });
             }
 
             @Override

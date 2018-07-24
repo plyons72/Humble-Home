@@ -2,7 +2,6 @@ package pitt.ece1896.humblehome;
 
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
-import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -24,6 +23,7 @@ public class ManualControl extends Fragment {
 
     private static final String TAG = "ManualControl";
 
+    private LinearLayout layout;
     public static List<BreakerView> breakers = new ArrayList<BreakerView>();
 
     public static ManualControl newInstance() {
@@ -41,7 +41,7 @@ public class ManualControl extends Fragment {
                              Bundle savedInstanceState) {
 
         View manualView = inflater.inflate(R.layout.manual_layout, container, false);
-        final LinearLayout layout = (LinearLayout) manualView.findViewById(R.id.layout);
+        layout = (LinearLayout) manualView.findViewById(R.id.layout);
 
         if (MainActivity.mqttManager != null) {
 
@@ -63,44 +63,11 @@ public class ManualControl extends Fragment {
 
                 @Override
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
-                    Log.d(TAG, MQTTManager.MQTT_TAG + "Message arrived\nTopic: " + topic + "\nPayload: " + message.getPayload());
+                    Log.d(TAG, MQTTManager.MQTT_TAG + "Message arrived\nTopic: " + topic + "\nPayload: " + new String(message.getPayload()));
 
                     if (topic.equals(MQTTManager.SetBreakerInfo)) {
-                        BreakerView breakerView = new BreakerView(getContext());
-                        breakerView.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                BreakerView breakerView = (BreakerView)v;
-                                Log.d(TAG, "breaker " + breakerView.getId() + " clicked");
-
-                                DialogFragment breakerInfoDialog = new BreakerInfoDialog();
-                                Bundle args = new Bundle();
-                                args.putInt("breakerId", breakerView.getId());
-                                args.putString("label", breakerView.getLabel());
-                                args.putString("description", breakerView.getDescription());
-                                breakerInfoDialog.setArguments(args);
-
-                                breakerInfoDialog.show(getFragmentManager(), "breaker");
-                            }
-                        });
-
-                        JSONObject jsonObject = new JSONObject(message.getPayload().toString());
-                        if (jsonObject.has("Item")) {
-                            JSONObject breakerJson = jsonObject.getJSONObject("Item");
-                            if (breakerJson.has("breakerId")) {
-                                breakerView.setId(breakerJson.getJSONObject("breakerId").getInt("N"));
-                            }
-                            if (breakerJson.has("label")) {
-                                breakerView.setLabel(breakerJson.getJSONObject("label").getString("S"));
-                            }
-                            if (breakerJson.has("description")) {
-                                breakerView.setDescription(breakerJson.getJSONObject("description").getString("S"));
-                            }
-                            if (breakerJson.has("breakerState")) {
-                                breakerView.setBreakerState(BreakerView.BreakerState.values()[breakerJson.getJSONObject("breakerState").getInt("N")]);
-                            }
-                            layout.addView(breakerView);
-                        }
+                        String payload = new String(message.getPayload());
+                        parseBreakerInfo(payload);
                     }
                 }
 
@@ -115,7 +82,6 @@ public class ManualControl extends Fragment {
                 }
             });
 
-            MainActivity.mqttManager.subscribeToTopic(MQTTManager.SetBreakerInfo);
             MainActivity.mqttManager.publishToTopic(MQTTManager.GetBreakerInfo, new String("1").getBytes());
 
         } else {
@@ -132,6 +98,48 @@ public class ManualControl extends Fragment {
             breakers.get(breakerId).setDescription(description);
 
             //TODO: send update to database
+        }
+    }
+
+    private void parseBreakerInfo(String info) {
+        BreakerView breakerView = new BreakerView(getContext());
+        breakerView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                BreakerView breakerView = (BreakerView)v;
+                Log.d(TAG, "breaker " + breakerView.getId() + " clicked");
+
+                DialogFragment breakerInfoDialog = new BreakerInfoDialog();
+                Bundle args = new Bundle();
+                args.putInt("breakerId", breakerView.getId());
+                args.putString("label", breakerView.getLabel());
+                args.putString("description", breakerView.getDescription());
+                breakerInfoDialog.setArguments(args);
+
+                breakerInfoDialog.show(getFragmentManager(), "breaker");
+            }
+        });
+
+        try {
+            JSONObject jsonObject = new JSONObject(info);
+            if (jsonObject.has("Item")) {
+                JSONObject breakerJson = jsonObject.getJSONObject("Item");
+                if (breakerJson.has("breakerId")) {
+                    breakerView.setId(breakerJson.getJSONObject("breakerId").getInt("N"));
+                }
+                if (breakerJson.has("label")) {
+                    breakerView.setLabel(breakerJson.getJSONObject("label").getString("S"));
+                }
+                if (breakerJson.has("description")) {
+                    breakerView.setDescription(breakerJson.getJSONObject("description").getString("S"));
+                }
+                if (breakerJson.has("breakerState")) {
+                    breakerView.setBreakerState(BreakerView.BreakerState.values()[breakerJson.getJSONObject("breakerState").getInt("N")]);
+                }
+                layout.addView(breakerView);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, e.toString());
         }
     }
 }
