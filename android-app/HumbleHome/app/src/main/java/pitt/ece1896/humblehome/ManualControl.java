@@ -17,6 +17,7 @@ import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class ManualControl extends Fragment {
@@ -82,7 +83,7 @@ public class ManualControl extends Fragment {
                 }
             });
 
-            MainActivity.mqttManager.publishToTopic(MQTTManager.GetBreakerInfo, new String("1").getBytes());
+            MainActivity.mqttManager.publishToTopic(MQTTManager.GetBreakerInfo, new String("*").getBytes());
 
         } else {
             Log.e(TAG, "mqttAndroidClient is null");
@@ -97,49 +98,54 @@ public class ManualControl extends Fragment {
             breakers.get(breakerId).setLabel(label);
             breakers.get(breakerId).setDescription(description);
 
-            //TODO: send update to database
+            MainActivity.mqttManager.publishToTopic(MQTTManager.PutBreakerInfo, breakers.get(breakerId).toJson().getBytes());
         }
     }
 
     private void parseBreakerInfo(String info) {
-        BreakerView breakerView = new BreakerView(getContext());
-        breakerView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                BreakerView breakerView = (BreakerView)v;
-                Log.d(TAG, "breaker " + breakerView.getId() + " clicked");
-
-                DialogFragment breakerInfoDialog = new BreakerInfoDialog();
-                Bundle args = new Bundle();
-                args.putInt("breakerId", breakerView.getId());
-                args.putString("label", breakerView.getLabel());
-                args.putString("description", breakerView.getDescription());
-                breakerInfoDialog.setArguments(args);
-
-                breakerInfoDialog.show(getFragmentManager(), "breaker");
-            }
-        });
-
         try {
             JSONObject jsonObject = new JSONObject(info);
-            if (jsonObject.has("Item")) {
-                JSONObject breakerJson = jsonObject.getJSONObject("Item");
-                if (breakerJson.has("breakerId")) {
-                    breakerView.setId(breakerJson.getJSONObject("breakerId").getInt("N"));
+            if (jsonObject.has("Items")) {
+                JSONArray array = jsonObject.getJSONArray("Items");
+                for (int i = 0; i < array.length(); i++) {
+                    BreakerView breakerView = new BreakerView(getContext());
+                    breakerView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            BreakerView breakerView = (BreakerView)v;
+                            Log.d(TAG, "breaker " + breakerView.getId() + " clicked");
+
+                            DialogFragment breakerInfoDialog = new BreakerInfoDialog();
+                            Bundle args = new Bundle();
+                            args.putInt("breakerId", breakerView.getId());
+                            args.putString("label", breakerView.getLabel());
+                            args.putString("description", breakerView.getDescription());
+                            breakerInfoDialog.setArguments(args);
+
+                            breakerInfoDialog.show(getFragmentManager(), "breaker");
+                        }
+                    });
+
+                    JSONObject breakerJson = array.getJSONObject(i);
+                    if (breakerJson.has("breakerId")) {
+                        breakerView.setId(breakerJson.getJSONObject("breakerId").getInt("N"));
+                    }
+                    if (breakerJson.has("label")) {
+                        breakerView.setLabel(breakerJson.getJSONObject("label").getString("S"));
+                    }
+                    if (breakerJson.has("description")) {
+                        breakerView.setDescription(breakerJson.getJSONObject("description").getString("S"));
+                    }
+                    if (breakerJson.has("state")) {
+                        breakerView.setBreakerState(BreakerView.BreakerState.values()[breakerJson.getJSONObject("state").getInt("N")]);
+                    }
+                    breakers.add(breakerView);
+                    layout.addView(breakerView);
                 }
-                if (breakerJson.has("label")) {
-                    breakerView.setLabel(breakerJson.getJSONObject("label").getString("S"));
-                }
-                if (breakerJson.has("description")) {
-                    breakerView.setDescription(breakerJson.getJSONObject("description").getString("S"));
-                }
-                if (breakerJson.has("breakerState")) {
-                    breakerView.setBreakerState(BreakerView.BreakerState.values()[breakerJson.getJSONObject("breakerState").getInt("N")]);
-                }
-                layout.addView(breakerView);
             }
         } catch (Exception e) {
             Log.e(TAG, e.toString());
+            e.printStackTrace();
         }
     }
 }

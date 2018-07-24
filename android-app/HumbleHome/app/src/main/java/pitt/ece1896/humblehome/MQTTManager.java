@@ -25,8 +25,10 @@ public class MQTTManager {
     private final String password = "humblehome1896";
 
     public static final String GetBreakerInfo = "GetBreakerInfo";
+    public static final String PutBreakerInfo = "PutBreakerInfo";
     public static final String SetBreakerInfo = "SetBreakerInfo";
     public static final String GetBreakerState = "GetBreakerState";
+    public static final String PutBreakerState = "PutBreakerState";
     public static final String SetBreakerState = "SetBreakerState";
 
     public MQTTManager(Context context) {
@@ -121,7 +123,7 @@ public class MQTTManager {
                 public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
                     Log.d(TAG, MQTT_TAG + "Failed to subscribe");
                 }
-            })/*.waitForCompletion()*/;
+            });
         } catch (MqttException ex) {
             Log.e(TAG, MQTT_TAG + ex.toString());
             ex.printStackTrace();

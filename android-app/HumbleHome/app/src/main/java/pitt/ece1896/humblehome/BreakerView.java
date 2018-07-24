@@ -49,6 +49,11 @@ public class BreakerView extends TableLayout {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 Log.d(TAG, "switch: " + id + " isChecked: " + isChecked);
+                String breakerStateJson = "{" +
+                                          "breakerId: " + id + ", " +
+                                          "breakerState: " + (isChecked ? BreakerState.ON : BreakerState.OFF) +
+                                          "}";
+                MainActivity.mqttManager.publishToTopic(MQTTManager.PutBreakerInfo, breakerStateJson.getBytes());
             }
         });
     }
@@ -95,6 +100,9 @@ public class BreakerView extends TableLayout {
         this.breakerState = breakerState;
         if (breakerState == BreakerState.ON || breakerState == BreakerState.ALWAYS_ON) {
             this.breakerSwitch.setChecked(true);
+            if (breakerState == BreakerState.ALWAYS_ON) {
+                this.breakerSwitch.setEnabled(false);
+            }
         } else {
             this.breakerSwitch.setChecked(false);
         }
@@ -106,7 +114,16 @@ public class BreakerView extends TableLayout {
         return "breakerId: " + this.id + "\n" +
                "label: " + this.label + "\n" +
                "description: " + this.description + "\n" +
-               "breakerState: " + this.breakerState;
+               "breakerState: " + this.breakerState.ordinal();
+    }
+
+    public String toJson() {
+        return "{" +
+                "breakerId: " + this.id + ", " +
+                "label: " + this.label + ", " +
+                "description: " + this.description + ", " +
+                "breakerState: " + this.breakerState.ordinal() +
+                "}";
     }
 
     public enum BreakerState { UNKNOWN, ON, OFF, ALWAYS_ON };

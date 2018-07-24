@@ -73,10 +73,22 @@ public class MainActivity extends AppCompatActivity {
                     public void onSuccess(IMqttToken asyncActionToken) {
                         Log.d(TAG, MQTTManager.MQTT_TAG + "Subscribed to " + MQTTManager.SetBreakerInfo);
 
-                        // Manually display the first fragment when app first opens
-                        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                        transaction.replace(R.id.frame_layout, BoardControl.newInstance());
-                        transaction.commit();
+                        mqttManager.subscribeToTopic(MQTTManager.SetBreakerState, new IMqttActionListener() {
+                            @Override
+                            public void onSuccess(IMqttToken asyncActionToken) {
+                                Log.d(TAG, MQTTManager.MQTT_TAG + "Subscribed to " + MQTTManager.SetBreakerState);
+
+                                // Manually display the first fragment when app first opens
+                                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                                transaction.replace(R.id.frame_layout, BoardControl.newInstance());
+                                transaction.commit();
+                            }
+
+                            @Override
+                            public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                                Log.e(TAG, MQTTManager.MQTT_TAG + "Failed to subscribe to " + MQTTManager.GetBreakerState);
+                            }
+                        });
                     }
 
                     @Override
