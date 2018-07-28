@@ -19,10 +19,10 @@ public class MQTTManager {
     private MqttAndroidClient mqttAndroidClient;
 
     public static final String MQTT_TAG = "MQTT - ";
-    public static final String serverUri = "ssl://b-f6c789c3-b708-4d73-b004-2a6245bd7c5d-1.mq.us-east-1.amazonaws.com:8883";
+    public static final String serverUri = "tcp://ec2-54-243-18-99.compute-1.amazonaws.com:1883";
     private final String clientId = "android-app";
-    private final String username = "user";
-    private final String password = "humblehome1896";
+    private final String username = "humblehome";
+    private final String password = "1896seniordesign";
 
     public static final String GetBreakerInfo = "GetBreakerInfo";
     public static final String PutBreakerInfo = "PutBreakerInfo";
