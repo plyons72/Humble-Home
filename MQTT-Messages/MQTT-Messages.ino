@@ -1,20 +1,26 @@
-// Patrick Lyons
-// Humble Home Embedded Code
+/* 
+ *  Patrick Lyons
+ *  COE 1896 - Senior Design
+ *  Summer 2018
+ *  University of Pittsburgh
+*/
 
-// Senior Design
-// Summer 2018
+/*
+ * HumbleHome Embedded System
+ * Boarduino (Atmega 328P) using an ESP 8266 WiFi Module
+*/
 
 #include <WiFiEspClient.h>
 #include <WiFiEsp.h>
 #include <WiFiEspUdp.h>
 #include <PubSubClient.h>
 #include <SoftwareSerial.h>
+#include <eRCaGuy_NewAnalogRead.h>
 
 
 // Class WiFi Network
 #define SSID "Embedded Systems Class"
 #define PASS "embedded1234"
-
 
 /*
 // Home WiFi Network
@@ -24,16 +30,26 @@
 
 // Initialize the Ethernet client object
 WiFiEspClient espClient;
-PubSubClient client(espClient);
 SoftwareSerial soft(13, 12); // RX, TX
 
+// WiFi Status
 int status = WL_IDLE_STATUS;
+
+// Holds the time since the last send
 unsigned long lastSend;
 
+// Holds the address of which breaker to access for reading
+int read_breaker_address[4] = {0,0,0,0};
+
+// Holds the address of which breaker to access for reading
+int write_breaker_address[4] = {0,0,0,0};
+
 // Server where thingsboard IoT platform is set up
-#define humblehome_server "ec2-54-243-18-99.compute-1.amazonaws.com"
+char humblehome_server[] = "ec2-54-243-18-99.compute-1.amazonaws.com";  
 
+void callback(char* topic, byte* payload, unsigned int length);
 
+PubSubClient client(humblehome_server, 1883, callback, espClient);
 
 void setup() {
   // Initialize serial for debugging
@@ -43,10 +59,7 @@ void setup() {
   analogReference(DEFAULT);
   InitWiFi();
 
-  // Set up server connection on port 1883
-  client.setServer(humblehome_server, 1883);
-  client.setCallback(callback);
-  
+  client.subscribe("PutBreakerState");
 }
 
 void loop() {
@@ -66,7 +79,7 @@ void loop() {
     reconnect();
   }
 
-  if ( millis() - lastSend > 1000 ) { // Update and send only after 1 seconds
+  if ( millis() - lastSend > 2000 ) { // Update and send only after 2 seconds
     getAndSendData();
     lastSend = millis();
   }
@@ -79,53 +92,55 @@ void getAndSendData()
   // Determines whether we do AC or DC calculation
   boolean ac_load = false;
 
-  float voltage_in;
-  float current_in;
-  float current_constant;
+  // Pins to track voltage and current from the breakers (mux)
+  int voltage_pin = A0;
+  int current_pin = A1;
 
+  // For taking more precise readings from board. 
+  //Precise to 14 bits, and taking average read from 10 samples
+  int precision_bits = 14;
+  int num_samples = 10;
+
+  // create new precise analog read object
+  float voltage_reading = adc.newAnalogRead(voltage_pin, precision_bits, num_samples);
+  float current_reading = adc.newAnalogRead(current_pin, precision_bits, num_samples);
+
+  // Precise readings from analog
+  const float MAX_READING_14_bit = 16368.0;
+
+  // Perform precise reading, and scale to 5v
+  current_reading = 5.0 * current_reading / MAX_READING_14_bit;
+  voltage_reading = 5.0 * voltage_reading / MAX_READING_14_bit;
+  
   // AC Load
   if (ac_load) { 
-    // .0049 (conversion factor for analog read) * 24 (scaling factor for AC current, where 5V = 120V)
-    voltage_in = .1176;
+    // Perform Aryana's AC current conversion calculations and scale by 10
+    current_reading = (current_reading * .01 - .0775) * 10;
 
-    // .0049 (conversion factor for analog read) * .01 (slope from Aryana's equation for AC current)
-    current_in = .000049;
-
-    // Constant term to subtract from current to get the final current value (from Aryana Equation)
-    current_constant = .0775;
+    // Scale voltage up by 24 for AC load
+    voltage_reading *= 24;
   }
 
   // DC Load
   else {
-    // .0049 (conversion factor for analog read) * 10 (scaling factor for AC current, where 5V = 50V)
-    voltage_in = .049; 
+    // Perform Aryana's DC Current conversion calculations and scale by 10
+    current_reading = (current_reading * 2.7717 - 6.9694) * 10;
 
-    // .0049 (conversion factor for analog read) * 2.7717 (slope from Aryana's equation for DC current)
-    current_in = .01358133;
-
-    // Constant term to subtract from current to get the final current value (from Aryana Equation)
-    current_constant = 6.9694;
+    // Scale voltage up by 10 for DC load
+    voltage_reading *= 10;
   }
-
-  // Multiply voltage multiplier by the voltage taken at the analog port to get the equivalent voltage from board
-  voltage_in *= analogRead(A0);
-
-  // Perform current calculation, then multiply outcome by scaling factor of 10
-  current_in *= analogRead(A1);
-  current_in -= current_constant;
-  current_in *= 10; 
   
   Serial.print("\nVoltage: ");
-  Serial.print(voltage_in);
+  Serial.print(voltage_reading);
   Serial.print(" Volts\t");
   Serial.print("Current: ");
-  Serial.print(current_in);
+  Serial.print(current_reading);
   Serial.println(" Amps");
   
 
   //String representations of voltage, current, and power
-  String voltage = String(voltage_in);
-  String current = String(current_in);
+  String voltage = String(voltage_reading);
+  String current = String(current_reading);
 
 
   // Just debug messages
@@ -152,12 +167,21 @@ void getAndSendData()
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
+
+  // Allocate the correct amount of memory for the payload copy
+  byte* p = (byte*)malloc(length);
+  // Copy the payload to the new buffer
+  memcpy(p,payload,length);
+
   Serial.print("Message arrived [");
   Serial.print(topic);
   Serial.print("] ");
-  for (int i = 0; i < length; i++) { Serial.print((char)payload[i]); }
+  for (int i = 0; i < length; i++) { Serial.print((char)p[i]); }
   Serial.println();
 
+  // Free the memory
+  free(p);
+  
 }
 
 void InitWiFi()
@@ -192,14 +216,15 @@ void reconnect() {
 
     // Attempt to connect (clientId, username, password)
     if ( client.connect("HUMBLEHOME", "humblehome", "1896seniordesign") ) {
-      client.subscribe("boarduino/subscribe", 1);
+        client.setCallback(callback);
+        client.subscribe("PutBreakerState");
       Serial.println( "[DONE]" );
     } 
     
     else {
       Serial.print( "[FAILED] [ rc = " );
       Serial.print( client.state() );
-      Serial.println( " : retrying in 5 seconds]" );
+      Serial.println( " : retrying in 3 seconds]" );
       // Wait 3 seconds before retrying
       delay(3000);
     }
