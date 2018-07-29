@@ -1,18 +1,26 @@
+// Patrick Lyons
+// Humble Home Embedded Code
+
+// Senior Design
+// Summer 2018
+
 #include <WiFiEspClient.h>
 #include <WiFiEsp.h>
 #include <WiFiEspUdp.h>
 #include <PubSubClient.h>
 #include <SoftwareSerial.h>
 
-/*
+
 // Class WiFi Network
 #define SSID "Embedded Systems Class"
 #define PASS "embedded1234"
-*/
 
+
+/*
 // Home WiFi Network
 #define SSID "LAN-Solo"
 #define PASS "CRtDDc4X"
+*/
 
 // Initialize the Ethernet client object
 WiFiEspClient espClient;
@@ -22,7 +30,9 @@ SoftwareSerial soft(13, 12); // RX, TX
 int status = WL_IDLE_STATUS;
 unsigned long lastSend;
 
-#define humblehome_server "ec2-54-209-17-201.compute-1.amazonaws.com"
+// Server where thingsboard IoT platform is set up
+#define humblehome_server "ec2-54-243-18-99.compute-1.amazonaws.com"
+
 
 
 void setup() {
@@ -33,11 +43,10 @@ void setup() {
   analogReference(DEFAULT);
   InitWiFi();
 
-  // Endpoint for the server
-  //char humblehome_server[] = "ec2-54-209-17-201.compute-1.amazonaws.com";
-
   // Set up server connection on port 1883
-  client.setServer( humblehome_server, 1883 );
+  client.setServer(humblehome_server, 1883);
+  client.setCallback(callback);
+  
 }
 
 void loop() {
@@ -79,9 +88,11 @@ void getAndSendData()
     // .0049 (conversion factor for analog read) * 24 (scaling factor for AC current, where 5V = 120V)
     voltage_in = .1176;
 
-    // .0049 (conversion factor for analog read) * .0164 (slope from Aryana's equation for AC current)
-    current_in = .00008036;
-    current_constant = -.0001;
+    // .0049 (conversion factor for analog read) * .01 (slope from Aryana's equation for AC current)
+    current_in = .000049;
+
+    // Constant term to subtract from current to get the final current value (from Aryana Equation)
+    current_constant = .0775;
   }
 
   // DC Load
@@ -89,23 +100,28 @@ void getAndSendData()
     // .0049 (conversion factor for analog read) * 10 (scaling factor for AC current, where 5V = 50V)
     voltage_in = .049; 
 
-    // .0049 (conversion factor for analog read) * 1.4898 (slope from Aryana's equation for DC current)
-    current_in = .00730002;
+    // .0049 (conversion factor for analog read) * 2.7717 (slope from Aryana's equation for DC current)
+    current_in = .01358133;
 
-    // Constant term to add to current_in to get the final current value
-    current_constant = -3.7468;
+    // Constant term to subtract from current to get the final current value (from Aryana Equation)
+    current_constant = 6.9694;
   }
 
+  // Multiply voltage multiplier by the voltage taken at the analog port to get the equivalent voltage from board
   voltage_in *= analogRead(A0);
+
+  // Perform current calculation, then multiply outcome by scaling factor of 10
   current_in *= analogRead(A1);
   current_in -= current_constant;
+  current_in *= 10; 
   
-  Serial.print("Voltage: ");
+  Serial.print("\nVoltage: ");
   Serial.print(voltage_in);
   Serial.print(" Volts\t");
   Serial.print("Current: ");
   Serial.print(current_in);
-  Serial.print(" Amps ");
+  Serial.println(" Amps");
+  
 
   //String representations of voltage, current, and power
   String voltage = String(voltage_in);
@@ -131,8 +147,17 @@ void getAndSendData()
   // Send payload
   char attributes[100];
   payload.toCharArray( attributes, 100 );
-  client.publish( "v1/devices/me/telemetry", attributes );
+  client.publish( "boarduino/publish", attributes );
   Serial.println( attributes );
+}
+
+void callback(char* topic, byte* payload, unsigned int length) {
+  Serial.print("Message arrived [");
+  Serial.print(topic);
+  Serial.print("] ");
+  for (int i = 0; i < length; i++) { Serial.print((char)payload[i]); }
+  Serial.println();
+
 }
 
 void InitWiFi()
@@ -165,11 +190,9 @@ void reconnect() {
   while (!client.connected()) {
     Serial.print("Connecting to MQTT Server ...");
 
-    // Token for humblehome device on thingsboard server
-    char iot_token[] = "lMo6q9a6jUKbqTGLtTVH";
-
     // Attempt to connect (clientId, username, password)
-    if ( client.connect("HUMBLEHOME", iot_token, NULL) ) {
+    if ( client.connect("HUMBLEHOME", "humblehome", "1896seniordesign") ) {
+      client.subscribe("boarduino/subscribe", 1);
       Serial.println( "[DONE]" );
     } 
     
@@ -177,8 +200,8 @@ void reconnect() {
       Serial.print( "[FAILED] [ rc = " );
       Serial.print( client.state() );
       Serial.println( " : retrying in 5 seconds]" );
-      // Wait 5 seconds before retrying
-      delay( 5000 );
+      // Wait 3 seconds before retrying
+      delay(3000);
     }
   }
 }
