@@ -39,20 +39,21 @@ client.on('connect', function(connack) {
 	
 	var power = 0.0;
 	var time = 0.0;
-	for (var i = 0; i < 500; i++) {
+	for (var i = 0; i < 50; i++) {
 		for (var j = 1; j <= 8; j++) {
 			var now = Date.now();
+			if (time == 0) time = now;
 			var message = '{ "time": "' + now + '", "breakerId": "' + j + '", "current": "' + i + '", "voltage": "' + i + '" }';
 			//console.log('sending message: ' + message);
 			client.publish(BreakerData, message);
 			power += i * i;
 			if (now - time >= 5000) {
-				console.log("Total Average Power: " + (power / (now - time)));
+				console.log('Average Power: ' + (power / (now - time)));
 				power = 0.0;
 				time = now;
 			}
 			
-			sleep(1000);
+			sleep(100);
 		}
 	}
 });

@@ -66,10 +66,10 @@ client.on('message', function(topic, message) {
 			// Do nothing?
 		});
 	} else if (topic == BreakerData) {
-		sampling.sample(JSON.parse(message), function(data) {
-			console.log("returned data: " + data.toString());
+		sampling.sample(JSON.parse(message), function(timestamp, power) {
+			var data = {timestamp: String(timestamp), power: String(power)};
+			ddb_access.putBreakerData(data);
+			//peak_shaving.peak_detect(Number(message));
 		});
-		//ddb_access.putBreakerData(data);
-		//peak_shaving.peak_detect(Number(message));
 	}
 });
