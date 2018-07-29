@@ -17,9 +17,9 @@ var stdFilter = new Array(WINDOW_SIZE).fill(0.0);
 
 module.exports = {
 	
-	peak_detect: function (data) {
+	peakDetect: function (data) {
     	
-		console.log('\npeak_detect:' + '\ndata = ' + data + '\ncnt = ' + cnt);
+		console.log('\npeakDetect()' + '\ndata = ' + data + '\ncnt = ' + cnt);
 		
 		if (cnt < WINDOW_SIZE) {
 			
@@ -31,10 +31,10 @@ module.exports = {
 						sum = sum + filteredData[i];
 					var avg = sum / lag;
 					
-					var std_sum = 0.0;
+					var stdSum = 0.0;
 					for (var i = 0; i < lag + 1; i++)
-						std_sum = std_sum + Math.pow((filteredData[i] - avg), 2);
-					var std = std_sum / (lag - 1);
+						stdSum = stdSum + Math.pow((filteredData[i] - avg), 2);
+					var std = stdSum / (lag - 1);
 					
 					for (var i = 0; i < lag + 1; i++) {
 						avgFilter[i] = avg;
@@ -63,10 +63,10 @@ module.exports = {
 					sum = sum + filteredData[i];
 				var avg = sum / lag;
 				
-				var std_sum = 0.0;
+				var stdSum = 0.0;
 				for (var i = cnt - lag; i < cnt; i++)
-					std_sum = std_sum + Math.pow((filteredData[i] - avg), 2);
-				var std = std_sum / (lag - 1);
+					stdSum = stdSum + Math.pow((filteredData[i] - avg), 2);
+				var std = stdSum / (lag - 1);
 				
 				avgFilter[cnt] = avg;
 				stdFilter[cnt] = std;

@@ -19,7 +19,7 @@ module.exports = {
 		}
 
 		if (data.time - time >= period) {
-			// calculate average power for all breakers over the sample period
+			// Calculate average power for all breakers over the sample period
 			var avgPower = power / (data.time - time);
 			console.log('Average Power: ' + avgPower);
 			

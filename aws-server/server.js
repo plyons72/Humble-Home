@@ -1,12 +1,11 @@
 
 require('console-stamp')(console, 'mm/dd/yy HH:MM:ss.l');
 
+var mqtt = require('mqtt');
 var ddb_access = require('./dynamodb_access');
 var sampling = require('./sampling');
 var power_factor = require('./power_factor');
 var peak_shaving = require('./peak_shaving');
-
-var mqtt = require('mqtt');
 
 var serverUri = 'tcp://ec2-54-243-18-99.compute-1.amazonaws.com:1883';
 var clientId = 'aws-client';
@@ -19,7 +18,8 @@ var SetBreakerInfo = 'SetBreakerInfo';
 var GetBreakerState = 'GetBreakerState';
 var PutBreakerState = 'PutBreakerState';
 var SetBreakerState = 'SetBreakerState';
-var BreakerData = 'BreakerData';
+var GetBreakerData = 'GetBreakerData';
+var PutBreakerData = 'PutBreakerData';
 
 var client = mqtt.connect(serverUri, {
 	clientId: clientId,
@@ -31,13 +31,15 @@ var client = mqtt.connect(serverUri, {
 client.on('connect', function(connack) {
     console.log('connected to ' + serverUri); 
 	
+	// Subscribe to all topics to log all communication
 	client.subscribe(GetBreakerInfo);
 	client.subscribe(PutBreakerInfo);
 	client.subscribe(SetBreakerInfo);
 	client.subscribe(GetBreakerState);
 	client.subscribe(PutBreakerState);
 	client.subscribe(SetBreakerState);
-	client.subscribe(BreakerData);
+	client.subscribe(GetBreakerData);
+	client.subscribe(PutBreakerData);
 });
     
 client.on('reconnect', function() {
@@ -49,9 +51,10 @@ client.on('error', function(error) {
 });
     
 client.on('message', function(topic, message) {
-    //console.log('topic: ' + topic + '\nmessage: ' + message);
+    console.log('topic: ' + topic + '\nmessage: ' + message);
 	
 	if (topic == GetBreakerInfo) {
+		// Fetch breaker info from database (all breakers or by breakerId)
 		if (message.toString() == '*') {
 			ddb_access.getBreakerInfo(function(response) {
 				client.publish(SetBreakerInfo, JSON.stringify(response));
@@ -62,14 +65,19 @@ client.on('message', function(topic, message) {
 			});	
 		}
 	} else if (topic == PutBreakerInfo) {
+		// Update breaker info in database (label, description, state)
 		ddb_access.putBreakerInfoById(JSON.parse(message), function(response) {
-			// Do nothing?
+			// Send response success or failure?
 		});
-	} else if (topic == BreakerData) {
+	} else if (topic == GetBreakerData) {
+		// Fetch breaker board measurements from database (total kWh for each day for last 5 days, incremental 15 min kWh for current day)
+						
+	} else if (topic == PutBreakerData) {
+		// Sample current and voltage measurements arriving from the breaker board to calculate the average power for all the breakers over the sampling period
 		sampling.sample(JSON.parse(message), function(timestamp, power) {
 			var data = {timestamp: String(timestamp), power: String(power)};
 			ddb_access.putBreakerData(data);
-			//peak_shaving.peak_detect(Number(message));
+			//peak_shaving.peakDetect(Number(message));
 		});
 	}
 });
