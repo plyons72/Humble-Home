@@ -1,15 +1,10 @@
 var mqtt = require('mqtt');
 var sleep = require('system-sleep');
-/*
-var serverUri = 'tcp://ec2-54-209-17-201.compute-1.amazonaws.com:1883';
+
+var serverUri = 'tcp://ec2-54-243-18-99.compute-1.amazonaws.com:1883';
 var clientId = 'breaker-info-test';
-var username = 'euDErYuDo857MH6Y2sQs';
-var password = null;
-*/
-var serverUri = 'ssl://b-f6c789c3-b708-4d73-b004-2a6245bd7c5d-1.mq.us-east-1.amazonaws.com:8883';
-var clientId = 'breaker-info-test';
-var username = 'user';
-var password = 'humblehome1896';
+var username = 'humblehome';
+var password = '1896seniordesign';
 
 var GetBreakerInfo = 'GetBreakerInfo';
 var PutBreakerInfo = 'PutBreakerInfo';
@@ -25,8 +20,6 @@ var client = mqtt.connect(serverUri, {
 client.on('connect', function(connack) {
     console.log('connected to ' + serverUri);
 	
-	client.subscribe(SetBreakerInfo);
-	
 	/*for (var i = 1; i <= 32; i++) {
 		client.publish(GetBreakerInfo, String(i));
 		// Wait 5 seconds
@@ -37,7 +30,8 @@ client.on('connect', function(connack) {
 	
 	//client.publish(PutBreakerInfo, '{ "breakerId": "2", "label": "Living Room", "description": "Lights, TV, Computer", "breakerState": "1" }');
 	
-	client.publish('SetBreakerState', '{ "breakerId": "2", "breakerState": "2" }');
+	//client.publish('SetBreakerState', '{ "breakerId": "2", "breakerState": "2" }');
+
 });
     
 client.on('reconnect', function() {

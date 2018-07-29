@@ -1,17 +1,14 @@
 
+require('console-stamp')(console, 'mm/dd/yy HH:MM:ss.l');
+
 var mqtt = require('mqtt');
 var fs = require('fs');
 var sleep = require('system-sleep');
-/*
-var serverUri = 'tcp://ec2-54-209-17-201.compute-1.amazonaws.com:1883';
+
+var serverUri = 'tcp://ec2-54-243-18-99.compute-1.amazonaws.com:1883';
 var clientId = 'breaker-data-test';
-var username = 'euDErYuDo857MH6Y2sQs';
-var password = null;
-*/
-var serverUri = 'ssl://b-f6c789c3-b708-4d73-b004-2a6245bd7c5d-1.mq.us-east-1.amazonaws.com:8883';
-var clientId = 'breaker-data-test';
-var username = 'user';
-var password = 'humblehome1896';
+var username = 'humblehome';
+var password = '1896seniordesign';
 
 var BreakerData = "BreakerData";
 
@@ -26,7 +23,7 @@ client.on('connect', function(connack) {
     console.log('\nconnected to ' + serverUri);
 	
 	// assume cmd = node test.js path\to\test\data\file
-	fs.readFile(process.argv[2], function(error, data) {
+	/*fs.readFile(process.argv[2], function(error, data) {
 		if (!error) {
 			var loads = data.toString().split('\n');
 			
@@ -38,7 +35,26 @@ client.on('connect', function(connack) {
 				//sleep(1000);
 			}
 		} else console.log('error: ' + error);
-	});
+	});*/
+	
+	var power = 0.0;
+	var time = 0.0;
+	for (var i = 0; i < 500; i++) {
+		for (var j = 1; j <= 8; j++) {
+			var now = Date.now();
+			var message = '{ "time": "' + now + '", "breakerId": "' + j + '", "current": "' + i + '", "voltage": "' + i + '" }';
+			//console.log('sending message: ' + message);
+			client.publish(BreakerData, message);
+			power += i * i;
+			if (now - time >= 5000) {
+				console.log("Total Average Power: " + (power / (now - time)));
+				power = 0.0;
+				time = now;
+			}
+			
+			sleep(1000);
+		}
+	}
 });
     
 client.on('reconnect', function() {

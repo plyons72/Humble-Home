@@ -73,6 +73,7 @@
       "resolved": "https://registry.npmjs.org/concat-stream/-/concat-stream-1.6.2.tgz",
       "version": "1.6.2"
     },
+    "console-stamp": "^0.2.6",
     "core-util-is": {
       "integrity": "sha1-tf1UIgqivFq1eqtxQMlAdUUDwac=",
       "resolved": "https://registry.npmjs.org/core-util-is/-/core-util-is-1.0.2.tgz",

@@ -1,21 +1,17 @@
 
+require('console-stamp')(console, 'mm/dd/yy HH:MM:ss.l');
+
 var ddb_access = require('./dynamodb_access');
+var sampling = require('./sampling');
 var power_factor = require('./power_factor');
 var peak_shaving = require('./peak_shaving');
 
 var mqtt = require('mqtt');
-/*
-var serverUri = 'tcp://ec2-54-209-17-201.compute-1.amazonaws.com:1883';
-//var clientId = 'aws-client';
-var clientId = 'local-client';
-var username = '0XsDeL0lUY508cEN2uWV';
-var password = null;
-*/
-var serverUri = 'ssl://b-f6c789c3-b708-4d73-b004-2a6245bd7c5d-1.mq.us-east-1.amazonaws.com:8883';
-//var clientId = 'aws-client';
-var clientId = 'local-client';
-var username = 'user';
-var password = 'humblehome1896';
+
+var serverUri = 'tcp://ec2-54-243-18-99.compute-1.amazonaws.com:1883';
+var clientId = 'aws-client';
+var username = 'humblehome';
+var password = '1896seniordesign';
 
 var GetBreakerInfo = 'GetBreakerInfo';
 var PutBreakerInfo = 'PutBreakerInfo';
@@ -53,7 +49,7 @@ client.on('error', function(error) {
 });
     
 client.on('message', function(topic, message) {
-    console.log('topic: ' + topic + '\nmessage: ' + message);
+    //console.log('topic: ' + topic + '\nmessage: ' + message);
 	
 	if (topic == GetBreakerInfo) {
 		if (message.toString() == '*') {
@@ -70,15 +66,10 @@ client.on('message', function(topic, message) {
 			// Do nothing?
 		});
 	} else if (topic == BreakerData) {
-		var now = new Date(Date.now());
-		var data = {};
-		data.timestamp = now.toISOString();
-		data.power = Number(message).toString();	// Remove \r at end of line
-		console.log(data);
-		//data.current = ;
-		//data.voltage = ;
-		//data.power = ;
+		sampling.sample(JSON.parse(message), function(data) {
+			console.log("returned data: " + data.toString());
+		});
 		//ddb_access.putBreakerData(data);
-		peak_shaving.peak_detect(Number(message));
+		//peak_shaving.peak_detect(Number(message));
 	}
 });

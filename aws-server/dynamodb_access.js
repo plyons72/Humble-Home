@@ -93,6 +93,29 @@ module.exports = {
 		
 	},
 	
+	getBreakerData: function (data) {
+		
+		console.log('getBreakerData()');
+		
+		/*var params = {
+			TableName: INFO_TABLE,
+			FilterExpression: 'contains (userId, :userId)',
+			ExpressionAttributeValues: {
+				':userId': {S: USER_ID}
+			}
+		};
+		
+		ddb.scan(params, function(error, result) {
+			if (error) {
+				console.log(error, error.stack);
+				callback(error);
+			} else {
+				callback(result);
+			}
+		});*/
+	
+	},
+	
 	putBreakerData: function (data) {
 		
 		console.log('putBreakerData() data: ', data);
