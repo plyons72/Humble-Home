@@ -5,6 +5,8 @@ var mqtt = require('mqtt');
 var fs = require('fs');
 var sleep = require('system-sleep');
 
+var power_factor = require('./power_factor');
+
 var serverUri = 'tcp://ec2-54-243-18-99.compute-1.amazonaws.com:1883';
 var clientId = 'test-client';
 var username = 'humblehome';
@@ -30,7 +32,10 @@ client.on('connect', function(connack) {
     console.log('connected to ' + serverUri);
 	
 	// Call test function(s) here
-
+	putBreakerData();
+	//getBreakerData('0');
+	//getBreakerData('2');
+	//powerFactor();
 });
     
 client.on('reconnect', function() {
@@ -64,12 +69,25 @@ function putBreakerInfoById() {
 	
 }
 
-function getBreakerData() {
-	// TODO
+function getBreakerData(param) {
+	client.publish(GetBreakerData, param);
 }
 
 function putBreakerData() {
-	sampling();
+	//sampling();
+	// Assume cmd = node test.js path\to\test\data\file
+	fs.readFile(process.argv[2], function(error, data) {
+		if (!error) {
+			var loads = data.toString().split('\n');
+			
+			for (var i = 0; i < loads.length; i++) {
+				var message = { timestamp: String(Date.now()), power: String(Number(loads[i])) };
+				console.log(message);
+				client.publish(PutBreakerData, JSON.stringify(message));
+				sleep(100);
+			}
+		} else console.log('error: ' + error);
+	});
 }
 
 function sampling() {
@@ -93,8 +111,26 @@ function sampling() {
 	}
 }
 
+// Comment out calls to sampling.sample() and ddb_access.putBreakerData() in server.js message receive (topic = PutBreakerData)
 function powerFactor() {
-	// TODO
+	power_factor.getBreakerLoads(function(breakers) {
+		for (var i = 0; i < breakers.length; i++) {
+			var loads = breakers[i];
+			for (var j = 0; j < loads.length; j++) {
+				var message = { breakerId: (i + 1), power: loads[j].appliedPower };
+				console.log('appliance on: ' + loads[j].name);
+				console.log(message);
+				client.publish(PutBreakerData, JSON.stringify(message));
+				sleep(5000);
+				
+				message = { breakerId: (i + 1), power: 0.0 };
+				console.log('appliance off: ' + loads[j].name);
+				console.log(message);
+				client.publish(PutBreakerData, JSON.stringify(message));
+				sleep(5000);
+			}
+		}
+	});
 }
 
 // Comment out calls to sampling.sample() and ddb_access.putBreakerData() in server.js message receive (topic = PutBreakerData)

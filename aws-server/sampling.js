@@ -5,28 +5,28 @@ var sleep = require('system-sleep');
 var period = 5000;
 
 var power = 0.0;
-var time = 0;
+var startTime = 0;
 
 module.exports = {
 	
-	sample: function (data, callback) {
+	sample: function (time, instPower, callback) {
 		
-		power += data.current * data.voltage;
+		power += instPower;
 		//console.log('power: ' + power);
 		
-		if (time == 0) {
-			time = data.time;
+		if (startTime == 0) {
+			startTime = data.time;
 		}
 
-		if (data.time - time >= period) {
+		if (data.time - startTime >= period) {
 			// Calculate average power for all breakers over the sample period
-			var avgPower = power / (data.time - time);
+			var avgPower = power / (data.time - startTime);
 			console.log('Average Power: ' + avgPower);
 			
 			power = 0.0;
-			time = data.time;
+			startTime = data.time;
 		
-			callback(data.time, avgPower);
+			callback(time, avgPower);
 		}
 		
 	}

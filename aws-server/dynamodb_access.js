@@ -93,12 +93,12 @@ module.exports = {
 		
 	},
 	
-	getBreakerData: function (data) {
+	getBreakerData: function (id, callback) {
 		
-		console.log('getBreakerData()');
+		console.log('getBreakerData() id: ' + id);
 		
-		/*var params = {
-			TableName: INFO_TABLE,
+		var params = {
+			TableName: DATA_TABLE,
 			FilterExpression: 'contains (userId, :userId)',
 			ExpressionAttributeValues: {
 				':userId': {S: USER_ID}
@@ -110,9 +110,51 @@ module.exports = {
 				console.log(error, error.stack);
 				callback(error);
 			} else {
-				callback(result);
+				if (id == -1) {				
+					callback(result);
+				} else {
+					var dailyDataPoints = 96;		// number of expected data points in one day (every 15 mins for 24 hrs)
+					console.log(result.Count);			
+					
+					var index = 0;
+					var data = [];
+					var dataPoints = result.Items;
+					if (id == 0) {
+						if (result.Count > dailyDataPoints) {
+							if (result.Count % dailyDataPoints != 0) {
+								index = result.Count - (result.Count % dailyDataPoints);
+							} else {
+								index = result.Count - dailyDataPoints;
+							}
+						}
+						console.log('index: ' + index);
+						data = dataPoints.slice(index);
+					} else {
+						if (Math.floor(result.Count / dailyDataPoints) < id) {
+							for (var i = 0; i < (id - Math.floor(result.Count / dailyDataPoints)); i++) {
+								data.push(0.0);
+							}
+						} else if (result.Count % dailyDataPoints != 0) {
+							index = result.Count - (result.Count % dailyDataPoints) - ((id - 1) * dailyDataPoints);
+						} else {
+							index = result.Count - (id * dailyDataPoints);
+						}
+						console.log('index: ' + index);
+						var temp = 0.0;
+						for (var i = index; i < result.Count; i++) {
+							temp += Number(dataPoints[i].power.N);
+							if (((i + 1) % dailyDataPoints) == 0) {
+								data.push(temp);
+								temp = 0.0;
+							}
+						}
+						if (temp != 0.0) data.push(temp);
+					}
+					var response = { id: id, data: data };
+					callback(response);
+				}
 			}
-		});*/
+		});
 	
 	},
 	
