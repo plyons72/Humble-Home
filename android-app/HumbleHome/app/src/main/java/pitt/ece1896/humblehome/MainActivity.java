@@ -60,14 +60,6 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(TAG, MQTTManager.MQTT_TAG + "Connected to: " + MQTTManager.serverUri);
                 }
 
-                /*mqttManager.subscribeToTopic(MQTTManager.GetBreakerInfo);
-                mqttManager.subscribeToTopic(MQTTManager.GetBreakerState);
-
-                // Manually display the first fragment when app first opens
-                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                transaction.replace(R.id.frame_layout, BoardControl.newInstance());
-                transaction.commit();*/
-
                 mqttManager.subscribeToTopic(MQTTManager.SetBreakerInfo, new IMqttActionListener() {
                     @Override
                     public void onSuccess(IMqttToken asyncActionToken) {
@@ -77,23 +69,34 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void onSuccess(IMqttToken asyncActionToken) {
                                 Log.d(TAG, MQTTManager.MQTT_TAG + "Subscribed to " + MQTTManager.SetBreakerState);
+                                mqttManager.subscribeToTopic(MQTTManager.SetBreakerData, new IMqttActionListener() {
+                                    @Override
+                                    public void onSuccess(IMqttToken asyncActionToken) {
+                                        Log.d(TAG, MQTTManager.MQTT_TAG + "Subscribed to " + MQTTManager.SetBreakerData);
 
-                                // Manually display the first fragment when app first opens
-                                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                                transaction.replace(R.id.frame_layout, BoardControl.newInstance());
-                                transaction.commit();
+                                        // Manually display the first fragment when app first opens
+                                        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                                        transaction.replace(R.id.frame_layout, BoardControl.newInstance());
+                                        transaction.commit();
+                                    }
+
+                                    @Override
+                                    public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                                        Log.e(TAG, MQTTManager.MQTT_TAG + "Failed to subscribe to " + MQTTManager.SetBreakerData);
+                                    }
+                                });
                             }
 
                             @Override
                             public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                                Log.e(TAG, MQTTManager.MQTT_TAG + "Failed to subscribe to " + MQTTManager.GetBreakerState);
+                                Log.e(TAG, MQTTManager.MQTT_TAG + "Failed to subscribe to " + MQTTManager.SetBreakerState);
                             }
                         });
                     }
 
                     @Override
                     public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                        Log.e(TAG, MQTTManager.MQTT_TAG + "Failed to subscribe to " + MQTTManager.GetBreakerInfo);
+                        Log.e(TAG, MQTTManager.MQTT_TAG + "Failed to subscribe to " + MQTTManager.SetBreakerInfo);
                     }
                 });
             }

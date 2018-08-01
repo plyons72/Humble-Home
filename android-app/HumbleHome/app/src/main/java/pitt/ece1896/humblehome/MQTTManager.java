@@ -30,6 +30,8 @@ public class MQTTManager {
     public static final String GetBreakerState = "GetBreakerState";
     public static final String PutBreakerState = "PutBreakerState";
     public static final String SetBreakerState = "SetBreakerState";
+    public static final String GetBreakerData = "GetBreakerData";
+    public static final String SetBreakerData = "SetBreakerData";
 
     public MQTTManager(Context context) {
         mqttAndroidClient = new MqttAndroidClient(context, serverUri, clientId);
@@ -145,6 +147,8 @@ public class MQTTManager {
             MqttMessage mqttMessage = new MqttMessage();
             mqttMessage.setPayload(payload);
             mqttAndroidClient.publish(topic, mqttMessage);
+            //Log.d(TAG, "payload size = " + payload.length);
+            //mqttAndroidClient.publish(topic, mqttMessage.getPayload(), 1, false);
         } catch (MqttException ex) {
             Log.e(TAG, MQTT_TAG + ex.toString());
             ex.printStackTrace();
