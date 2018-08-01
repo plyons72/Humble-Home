@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,7 @@ public class ManualControl extends Fragment {
     private static final String TAG = "ManualControl";
 
     private LinearLayout layout;
+    private ProgressBar spinner;
     public static List<BreakerView> breakers = new ArrayList<BreakerView>();
 
     public static ManualControl newInstance() {
@@ -45,6 +47,7 @@ public class ManualControl extends Fragment {
 
         View manualView = inflater.inflate(R.layout.manual_layout, container, false);
         layout = (LinearLayout) manualView.findViewById(R.id.layout);
+        spinner = (ProgressBar)layout.findViewById(R.id.infoProgressBar);
 
         if (MainActivity.mqttManager != null) {
 
@@ -70,6 +73,7 @@ public class ManualControl extends Fragment {
 
                     String payload = new String(message.getPayload());
                     if (topic.equals(MQTTManager.SetBreakerInfo)) {
+                        spinner.setVisibility(View.GONE);
                         parseBreakerInfo(payload);
                     } else if (topic.equals(MQTTManager.SetBreakerState)) {
                         parseBreakerState(payload);
@@ -88,6 +92,7 @@ public class ManualControl extends Fragment {
             });
 
             MainActivity.mqttManager.publishToTopic(MQTTManager.GetBreakerInfo, new String("*").getBytes());
+            spinner.setVisibility(View.VISIBLE);
 
         } else {
             Log.e(TAG, "mqttAndroidClient is null");

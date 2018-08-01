@@ -12,11 +12,20 @@
         <LinearLayout
             android:id="@+id/layout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:divider="?android:listDivider"
             android:showDividers="middle"
             android:orientation="vertical"
-            android:padding="10sp" />
+            android:padding="10sp">
+
+            <ProgressBar
+                android:id="@+id/infoProgressBar"
+                style="@style/ProgressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center" />
+
+        </LinearLayout>
 
     </ScrollView>
 

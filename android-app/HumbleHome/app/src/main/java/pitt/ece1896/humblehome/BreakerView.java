@@ -49,10 +49,10 @@ public class BreakerView extends TableLayout {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 Log.d(TAG, "switch: " + id + " isChecked: " + isChecked);
-                String breakerStateJson = "{ " +
+                String breakerStateJson = String.valueOf(id)/*"{ " +
                                           "breakerId: " + id + ", " +
                                           "breakerState: " + (isChecked ? BreakerState.ON : BreakerState.OFF) +
-                                          " }";
+                                          " }"*/;
                 MainActivity.mqttManager.publishToTopic(MQTTManager.PutBreakerState, breakerStateJson.getBytes());
             }
         });
