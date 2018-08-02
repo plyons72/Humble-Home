@@ -16,10 +16,10 @@ SoftwareSerial sw(13,12); // (RX, TX)
 void setup() 
 {
     // Arduino Serial
-    Serial.begin(9600); 
+    Serial.begin(115200); 
 
     while(!Serial){ ; }
-    sw.begin(9600);
+    sw.begin(115200);
 
  
     Serial.println("");
