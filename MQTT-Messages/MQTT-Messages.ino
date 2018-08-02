@@ -68,8 +68,8 @@ int breaker = 0;
 
 // Pins corresponding to the address bits used to read data from mux
 const int bIn_0 = 5;
-const int bIn_1 = 6;
-const int bIn_2 = 7;
+const int bIn_1 = 19;
+const int bIn_2 = 17;
 const int bIn_3 = 8;
 
 // Pins corresponding to the address bits used to change breaker states
@@ -83,12 +83,15 @@ int bitsIn[4] = {bIn_0, bIn_1, bIn_2, bIn_3};
 int bitsOut[4] = {bOut_0, bOut_1, bOut_2, bOut_3};
 
 // Toggle the breakers by setting this pin from low to high
-// Analog 2
-int togglePin = 16;
+// Analog 0
+int togglePin = 18;
 
 // Read Current and Voltages
 // Analog 1
 int readPin = 15;
+
+// Pin to set high for wifi module to operate properly
+//int wifiEnable = 18;
 
 void setup() {
   // Initialize serial for debugging
@@ -104,7 +107,12 @@ void setup() {
   pinMode(readPin, INPUT);
   pinMode(togglePin, OUTPUT);
 
+  // Initially set toggle pin low so that jump to logic level 1 causes a toggle
   digitalWrite(togglePin, LOW);
+
+  // Wifi Enable (CHPD) should stay high
+//  pinMode(wifiEnable, OUTPUT);
+//  digitalWrite(wifiEnable, HIGH);
 
   // Reference for analog in should be 5v
   analogReference(DEFAULT);
@@ -136,7 +144,9 @@ void loop() {
     lastSend = millis();
   }
 
-  client.loop();
+  // 5 Second period to receive messages
+  unsigned long receiveLoop = millis() + 5000;
+  while(millis() < receiveLoop) { client.loop(); }
 }
 
 // Given a breaker number, set the address bits to change that breaker state
@@ -461,9 +471,9 @@ void getAndSendData() {
   payload += "}";
 
   // Send payload
-  char msg[50];
+  char msg[100];
   
-  payload.toCharArray(msg, 50);
+  payload.toCharArray(msg, 100);
   
   if (!client.publish( "boarduino/publish", msg )) { Serial.println("Publish failed"); }
   client.loop();
@@ -475,7 +485,10 @@ void getAndSendData() {
 
   // If we read in the last value from the breakers, reset back to the start
   if (readIndex == 16) { readIndex = 0; }
-  client.loop();
+
+  // 5 Second period to receive messages
+  unsigned long receiveLoop = millis() + 5000;
+  while(millis() < receiveLoop) { client.loop(); }
   
 }
 
@@ -503,7 +516,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   
   // Sets the address of the write mux, and waits long enough to ensure it gets low signal
   setWriteMux(breakerNum);
-  delay(5000);
+  delay(500);
 
   // Write high and hold it for 5 seconds to allow it to be received
   digitalWrite(togglePin, HIGH);
@@ -554,9 +567,9 @@ void reconnect() {
     else {
       Serial.print( "[FAILED] [ rc = " );
       Serial.print( client.state() );
-      Serial.println( " : retrying in 3 seconds]" );
-      // Wait 3 seconds before retrying
-      delay(3000);
+      Serial.println( " : retrying in 2 seconds]" );
+      // Wait 2 seconds before retrying
+      delay(2000);
     }
   }
 }
