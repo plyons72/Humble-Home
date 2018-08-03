@@ -21,6 +21,7 @@ var SetBreakerState = 'SetBreakerState';
 var GetBreakerData = 'GetBreakerData';
 var PutBreakerData = 'PutBreakerData';
 var SetBreakerData = 'SetBreakerData';
+var SwitchSource = 'SwitchSource';
 
 var client = mqtt.connect(serverUri, {
 	clientId: clientId,
@@ -42,6 +43,7 @@ client.on('connect', function(connack) {
 	client.subscribe(GetBreakerData);
 	client.subscribe(PutBreakerData);
 	client.subscribe(SetBreakerData);
+	client.subscribe(SwitchSource);
 });
     
 client.on('reconnect', function() {
@@ -69,7 +71,7 @@ client.on('message', function(topic, message) {
 	} else if (topic == PutBreakerInfo) {
 		// Update breaker info in database (label, description, state)
 		ddb_access.putBreakerInfoById(JSON.parse(message), function(response) {
-			// Send response success or failure?
+			console.log(response);
 		});
 	} else if (topic == GetBreakerData) {
 		// Fetch breaker board measurements from database (total kWh for each day for last 5 days, incremental 15 min kWh for current day)
@@ -80,13 +82,17 @@ client.on('message', function(topic, message) {
 	} else if (topic == PutBreakerData) {
 		// Sample current and voltage measurements arriving from the breaker board to calculate the average power for all the breakers over the sampling period
 		var data = JSON.parse(message);
-		//power_factor.getPowerFactor(data.breakerId, data.power, /*data.current, data.voltage,*/ function(instPower) {
-			//sampling.sample(data.time, instPower, function(timestamp, power) {
-				//var data = {timestamp: String(timestamp), power: String(power)};
+		power_factor.getPowerFactor(data.breakerId, data.power, /*data.current, data.voltage,*/ function(instPower) {
+			sampling.sample(data.time, instPower, function(timestamp, power) {
+				var data = {timestamp: String(timestamp), power: String(power)};
 				ddb_access.putBreakerData(data);
-				//peak_shaving.peakDetect(Number(message));
-			//});
-		//});		
-		
+				peak_shaving.peakDetect(Number(data.power), function(peak) {
+					if (peak == 1) {
+						console.log('=================Peak detected=================');
+						client.publish(SwitchSource, peak);
+					}
+				});
+			});
+		});
 	}
 });

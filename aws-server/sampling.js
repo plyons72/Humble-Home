@@ -9,12 +9,13 @@ var startTime = 0;
 
 module.exports = {
 	
+	// Sum samples and calculate average every sample period 
+	// Reset if last sample time is greater than current sample time (sketch has been restarted)
 	sample: function (time, instPower, callback) {
 		
 		power += instPower;
-		//console.log('power: ' + power);
 		
-		if (startTime == 0) {
+		if (startTime == 0 || startTime > data.time) {
 			startTime = data.time;
 		}
 

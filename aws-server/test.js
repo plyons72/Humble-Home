@@ -20,6 +20,8 @@ var PutBreakerState = 'PutBreakerState';
 var SetBreakerState = 'SetBreakerState';
 var GetBreakerData = 'GetBreakerData';
 var PutBreakerData = 'PutBreakerData';
+var SetBreakerData = 'SetBreakerData';
+var SwitchSource = 'SwitchSource';
 
 var client = mqtt.connect(serverUri, {
 	clientId: clientId,
@@ -32,7 +34,8 @@ client.on('connect', function(connack) {
     console.log('connected to ' + serverUri);
 	
 	// Call test function(s) here
-	putBreakerData();
+	peakShaving();
+	//putBreakerData();
 	//getBreakerData('0');
 	//getBreakerData('2');
 	//powerFactor();
@@ -84,7 +87,7 @@ function putBreakerData() {
 				var message = { timestamp: String(Date.now()), power: String(Number(loads[i])) };
 				console.log(message);
 				client.publish(PutBreakerData, JSON.stringify(message));
-				sleep(100);
+				sleep(500);
 			}
 		} else console.log('error: ' + error);
 	});
@@ -135,7 +138,8 @@ function powerFactor() {
 
 // Comment out calls to sampling.sample() and ddb_access.putBreakerData() in server.js message receive (topic = PutBreakerData)
 function peakShaving() {
-	// Assume cmd = node test.js path\to\test\data\file
+	putBreakerData();
+	/*// Assume cmd = node test.js path\to\test\data\file
 	fs.readFile(process.argv[2], function(error, data) {
 		if (!error) {
 			var loads = data.toString().split('\n');
@@ -143,9 +147,8 @@ function peakShaving() {
 			for (var i = 0; i < loads.length; i++) {
 				console.log(loads[i]);
 				client.publish(PutBreakerData, loads[i]);
-				// Wait 5 seconds
-				sleep(5000);
+				sleep(100);
 			}
 		} else console.log('error: ' + error);
-	});
+	});*/
 }
