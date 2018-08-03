@@ -35,38 +35,6 @@ public class MQTTManager {
 
     public MQTTManager(Context context) {
         mqttAndroidClient = new MqttAndroidClient(context, serverUri, clientId);
-
-        /*mqttAndroidClient.setCallback(new MqttCallbackExtended() {
-            @Override
-            public void connectComplete(boolean reconnect, String serverURI) {
-                if (reconnect) {
-                    Log.d(TAG, MQTT_TAG + "Reconnected to: " + serverUri);
-
-                } else {
-                    Log.d(TAG, MQTT_TAG + "Connected to: " + serverUri);
-                }
-            }
-
-            @Override
-            public void connectionLost(Throwable cause) {
-                Log.d(TAG, MQTT_TAG + "Connection lost");
-            }
-
-            @Override
-            public void messageArrived(String topic, MqttMessage message) throws Exception {
-                Log.d(TAG, MQTT_TAG + "Message arrived\nTopic: " + topic + "\nPayload: " + new String(message.getPayload()));
-            }
-
-            @Override
-            public void deliveryComplete(IMqttDeliveryToken token) {
-                try {
-                    Log.d(TAG, MQTT_TAG + "Delivery complete\nMessage: " + new String(token.getMessage().getPayload()));
-                } catch (MqttException ex) {
-                    Log.e(TAG, MQTT_TAG + ex.toString());
-                    ex.printStackTrace();
-                }
-            }
-        });*/
     }
 
     public boolean connected() {
@@ -76,7 +44,6 @@ public class MQTTManager {
     public void connect() {
         if (!connected()) {
             try {
-
                 MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
                 mqttConnectOptions.setAutomaticReconnect(true);
                 mqttConnectOptions.setCleanSession(false);
@@ -147,8 +114,6 @@ public class MQTTManager {
             MqttMessage mqttMessage = new MqttMessage();
             mqttMessage.setPayload(payload);
             mqttAndroidClient.publish(topic, mqttMessage);
-            //Log.d(TAG, "payload size = " + payload.length);
-            //mqttAndroidClient.publish(topic, mqttMessage.getPayload(), 1, false);
         } catch (MqttException ex) {
             Log.e(TAG, MQTT_TAG + ex.toString());
             ex.printStackTrace();

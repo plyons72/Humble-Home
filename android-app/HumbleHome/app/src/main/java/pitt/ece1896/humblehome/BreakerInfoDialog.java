@@ -28,8 +28,6 @@ public class BreakerInfoDialog extends DialogFragment {
         TextView breakerIdView = (TextView)view.findViewById(R.id.breakerId);
         final EditText labelView = (EditText)view.findViewById(R.id.label);
         final EditText descriptionView = (EditText)view.findViewById(R.id.description);
-        //Button okBtn = (Button)view.findViewById(R.id.okBtn);
-        //Button cancelBtn = (Button)view.findViewById(R.id.cancelBtn);
 
         breakerIdView.setText("Breaker ID: " + breakerId);
         labelView.setText(label);

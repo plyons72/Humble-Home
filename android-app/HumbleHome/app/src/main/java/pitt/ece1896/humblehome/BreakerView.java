@@ -65,8 +65,6 @@ public class BreakerView extends TableLayout {
     public void setId(int id) {
         this.id = id;
         this.idView.setText("Breaker ID: " + id);
-        //invalidate();
-        //requestLayout();
     }
 
     public String getLabel() {
@@ -76,8 +74,6 @@ public class BreakerView extends TableLayout {
     public void setLabel(String label) {
         this.label = label;
         this.labelView.setText(label);
-        //invalidate();
-        //requestLayout();
     }
 
     public String getDescription() {
@@ -87,8 +83,6 @@ public class BreakerView extends TableLayout {
     public void setDescription(String description) {
         this.description = description;
         this.descriptionView.setText(description);
-        //invalidate();
-        //requestLayout();
     }
 
     public BreakerState getBreakerState() {
@@ -105,8 +99,6 @@ public class BreakerView extends TableLayout {
         } else {
             this.breakerSwitch.setChecked(false);
         }
-        //invalidate();
-        //requestLayout();
     }
 
     public String toString() {

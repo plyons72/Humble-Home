@@ -169,7 +169,7 @@ public class ManualControl extends Fragment {
                     breakerState = BreakerState.values()[jsonObject.getInt("breakerState")];
                 }
 
-                // TODO: improve efficiency for large list of breakers
+                // improvement in efficiency needed for large list of breakers
                 for (BreakerView breaker : breakers) {
                     if (breaker.getId() == breakerId) {
                         breaker.setBreakerState(breakerState);
