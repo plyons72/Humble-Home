@@ -8,9 +8,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 
 import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.ValueDependentColor;
 import com.jjoe64.graphview.helper.DateAsXAxisLabelFormatter;
+import com.jjoe64.graphview.helper.StaticLabelsFormatter;
 import com.jjoe64.graphview.series.BarGraphSeries;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
@@ -22,6 +25,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -29,9 +33,11 @@ public class DataAnalysis extends Fragment {
 
     private static final String TAG = "DataAnalysis";
 
-    private View dataView;
+    private ProgressBar spinner;
     private GraphView lineGraph;
     private GraphView barGraph;
+
+    private DecimalFormat df = new DecimalFormat("#.00");
 
     public static DataAnalysis newInstance() {
         DataAnalysis fragment = new DataAnalysis();
@@ -49,8 +55,9 @@ public class DataAnalysis extends Fragment {
 
         getActivity().setTitle("Usage Data");
 
-        dataView = (View)inflater.inflate(R.layout.data_layout, container, false);
+        View dataView = (View)inflater.inflate(R.layout.data_layout, container, false);
         LinearLayout layout = (LinearLayout) dataView.findViewById(R.id.dataLayout);
+        spinner = (ProgressBar)layout.findViewById(R.id.dataProgressBar);
         lineGraph = (GraphView) layout.findViewById(R.id.lineGraph);
         barGraph = (GraphView) layout.findViewById(R.id.barGraph);
 
@@ -76,8 +83,12 @@ public class DataAnalysis extends Fragment {
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
                     Log.d(TAG, MQTTManager.MQTT_TAG + "Message arrived\nTopic: " + topic + "\nPayload: " + new String(message.getPayload()));
 
-                    String payload = new String(message.getPayload());
-                    parseBreakerData(payload);
+                    if (topic.equals(MQTTManager.SetBreakerData)) {
+                        spinner.setVisibility(View.GONE);
+
+                        String payload = new String(message.getPayload());
+                        parseBreakerData(payload);
+                    }
                 }
 
                 @Override
@@ -97,6 +108,8 @@ public class DataAnalysis extends Fragment {
             // Publish to GetBreakerData to request breaker data for the last week
             MainActivity.mqttManager.publishToTopic(MQTTManager.GetBreakerData, new String("7").getBytes());
 
+            spinner.setVisibility(View.VISIBLE);
+
         } else {
             Log.e(TAG, "mqttAndroidClient is null");
         }
@@ -112,14 +125,8 @@ public class DataAnalysis extends Fragment {
 
             DataPoint[] dataPoints = new DataPoint[jsonData.length()];
             if (id == 0) {
-                //long lastTime = 0;
                 for (int i = 0; i < jsonData.length(); i++) {
-                    //long t = Long.parseLong(jsonData.getJSONObject(i).getJSONObject("timestamp").getString("S"));
                     Date d = new Date();
-                    //if (lastTime == 0) d.setTime(lastTime);
-                    //else d.setTime(d.getTime() + (t - lastTime));
-                    //lastTime = t;
-                    //Log.d(TAG, "Date: " + d.toString());
                     d.setTime(i * 15 * 60 * 1000);
                     double y = jsonData.getJSONObject(i).getJSONObject("power").getDouble("N");
                     dataPoints[i] = new DataPoint(d, y);
@@ -140,7 +147,11 @@ public class DataAnalysis extends Fragment {
     }
 
     private void createLineGraph(DataPoint[] dataPoints) {
-        lineGraph.setTitle("Today's Usage (kWh)");
+        double usage = 0.0;
+        for (DataPoint dp : dataPoints) {
+            usage += dp.getY();
+        }
+        lineGraph.setTitle("Today's Usage: " + df.format(usage) + " kWh");
         lineGraph.getGridLabelRenderer().setLabelFormatter(new DateAsXAxisLabelFormatter(getActivity(), /*DateFormat.getTimeInstance()*/new SimpleDateFormat("HH:mm")));
         lineGraph.getViewport().setMinX(dataPoints[0].getX());
         lineGraph.getViewport().setMaxX(dataPoints[dataPoints.length - 1].getX());
@@ -154,16 +165,19 @@ public class DataAnalysis extends Fragment {
         barGraph.setTitle("Past Week's Usage (kWh)");
         BarGraphSeries<DataPoint> series = new BarGraphSeries<>(dataPoints);
         barGraph.addSeries(series);
+        StaticLabelsFormatter staticLabelsFormatter = new StaticLabelsFormatter(barGraph);
+        staticLabelsFormatter.setHorizontalLabels(new String[] {"F", "Sa", "S", "M", "Tu", "W", "Th"});
+        barGraph.getGridLabelRenderer().setLabelFormatter(staticLabelsFormatter);
 
-        /*series.setValueDependentColor(new ValueDependentColor<DataPoint>() {
+        series.setValueDependentColor(new ValueDependentColor<DataPoint>() {
             @Override
             public int get(DataPoint data) {
                 return Color.rgb((int)data.getX() * 255 / 4, (int)Math.abs(data.getY() * 255 / 6), 100);
             }
-        });*/
+        });
 
-        series.setSpacing(50);
-        series.setDrawValuesOnTop(false);
+        series.setSpacing(5);
+        series.setDrawValuesOnTop(true);
         series.setValuesOnTopColor(Color.BLACK);
 
         barGraph.setVisibility(View.VISIBLE);
