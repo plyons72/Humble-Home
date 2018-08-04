@@ -14,6 +14,7 @@ var USER_ID = '48756d626c65486f6d65';
 
 module.exports = {
 	
+	// Get record for all breakers (id, label, description, state) from DynamoDB Breakers table
 	getBreakerInfo: function (callback) {
 		
 		console.log('getBreakerInfo()');
@@ -37,6 +38,7 @@ module.exports = {
 	
 	},
 	
+	// Get record for one breaker (id, label, description, state) from DynamoDB Breakers table
 	getBreakerInfoById: function (id, callback) {
 		
 		console.log('getBreakerInfoById() id: ' + id);
@@ -60,6 +62,7 @@ module.exports = {
 		
 	},
 	
+	// Update record for one breaker (label, description, state) in DynamoDB Breakers table
 	putBreakerInfoById: function(info, callback) {
 		
 		console.log('putBreakerInfoById() info: ', info);
@@ -93,6 +96,8 @@ module.exports = {
 		
 	},
 	
+	// Get all records from DynamoDB CurrentVoltageData table
+	// Process records to return the requested information
 	getBreakerData: function (id, callback) {
 		
 		console.log('getBreakerData() id: ' + id);
@@ -110,6 +115,8 @@ module.exports = {
 				console.log(error, error.stack);
 				callback(error);
 			} else {
+				
+				// Request for all records
 				if (id == -1) {				
 					callback(result);
 				} else {
@@ -119,6 +126,8 @@ module.exports = {
 					var index = 0;
 					var data = [];
 					var dataPoints = result.Items;
+					
+					// Request for records from the current day
 					if (id == 0) {
 						if (result.Count > dailyDataPoints) {
 							if (result.Count % dailyDataPoints != 0) {
@@ -129,6 +138,8 @@ module.exports = {
 						}
 						console.log('index: ' + index);
 						data = dataPoints.slice(index);
+						
+					// Request for records from the last [id] number of days
 					} else {
 						if (Math.floor(result.Count / dailyDataPoints) < id) {
 							for (var i = 0; i < (id - Math.floor(result.Count / dailyDataPoints)); i++) {
@@ -158,6 +169,7 @@ module.exports = {
 	
 	},
 	
+	// Add new record to DynamoDB CurrentVoltageData table
 	putBreakerData: function (data) {
 		
 		console.log('putBreakerData() data: ', data);
